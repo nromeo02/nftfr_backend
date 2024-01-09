@@ -3,14 +3,14 @@ import java.time.*;
 import java.time.Duration;
 public class Sale {
     private String id;
-    private String idnft;
+    private String idNft;
     private double price;
     private LocalTime timeLeft;
     private LocalDate creationDate;
 
-    public Sale(String id, String idnft, double price, LocalTime timeLeft, LocalDate creationDate) {
+    public Sale(String id, String idNft, double price, LocalTime timeLeft, LocalDate creationDate) {
         this.id = id;
-        this.idnft = idnft;
+        this.idNft = idNft;
         this.price = price;
         this.timeLeft = timeLeft;
         this.creationDate = creationDate;
@@ -29,12 +29,12 @@ public class Sale {
         this.id = id;
     }
 
-    public String getIdnft() {
-        return idnft;
+    public String getidNft() {
+        return idNft;
     }
 
-    public void setIdnft(String idnft) {
-        this.idnft = idnft;
+    public void setidNft(String idNft) {
+        this.idNft = idNft;
     }
 
     public double getPrice() {
