@@ -1,4 +1,4 @@
-package org.nftfr.backend.persistenza.model;
+package org.nftfr.backend.persistence.model;
 
 public class User {
     private String username;
@@ -58,9 +58,11 @@ public class User {
     public String getUsername(){
         return username;
     }
+
     public void setUsername(String s){
         this.username = s;
     }
+
     public String getPassword() {
         return password;
     }

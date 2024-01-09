@@ -1,4 +1,4 @@
-package org.nftfr.backend.persistenza.model;
+package org.nftfr.backend.persistence.model;
 
 public class PaymentMethod {
     private String address;

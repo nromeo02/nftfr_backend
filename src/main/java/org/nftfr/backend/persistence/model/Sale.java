@@ -1,5 +1,10 @@
+<<<<<<< HEAD:src/main/java/org/nftfr/backend/persistenza/model/Sale.java
 package org.nftfr.backend.persistenza.model;
 import java.time.LocalDateTime;
+=======
+package org.nftfr.backend.persistence.model;
+import java.time.*;
+>>>>>>> userdao:src/main/java/org/nftfr/backend/persistence/model/Sale.java
 import java.time.Duration;
 public class Sale {
     private String id;
