@@ -1,6 +1,6 @@
-package org.nftfr.backend.persistenza.model;
+package org.nftfr.backend.persistence.model;
 import java.util.ArrayList;
-import java.util.List;
+
 public class Nft {
     private String id;
     private String author;
