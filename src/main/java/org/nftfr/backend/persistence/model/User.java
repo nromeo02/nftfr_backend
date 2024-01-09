@@ -7,16 +7,16 @@ public class User {
     private String password;
     private Long value;
     private int rank;
-    private int isAdmin;
+    private boolean admin;
     public User(){}
-    public User(String username, String name, String surname, String password, Long value, int rank, int isAdmin) {
+    public User(String username, String name, String surname, String password, Long value, int rank, boolean admin) {
         this.username = username;
         this.name = name;
         this.surname = surname;
         this.password = password;
         this.value = value;
         this.rank = rank;
-        this.isAdmin = isAdmin;
+        this.admin = admin;
     }
 
     public String getName() {
@@ -51,8 +51,8 @@ public class User {
         this.rank = rank;
     }
 
-    public int getIsAdmin() {
-        return isAdmin;
+    public boolean isAdmin() {
+        return admin;
     }
 
     public String getUsername(){
@@ -71,8 +71,8 @@ public class User {
         this.password = password;
     }
 
-    public void setIsAdmin(int isAdmin) {
-        this.isAdmin = isAdmin;
+    public void setAdmin(boolean admin) {
+        this.admin = admin;
     }
 
 }
