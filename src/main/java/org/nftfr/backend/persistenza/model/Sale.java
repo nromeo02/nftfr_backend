@@ -1,14 +1,14 @@
 package org.nftfr.backend.persistenza.model;
-import java.time.*;
+import java.time.LocalDateTime;
 import java.time.Duration;
 public class Sale {
     private String id;
     private String idNft;
     private double price;
-    private LocalTime timeLeft;
-    private LocalDate creationDate;
+    private LocalDateTime timeLeft;
+    private LocalDateTime creationDate;
 
-    public Sale(String id, String idNft, double price, LocalTime timeLeft, LocalDate creationDate) {
+    public Sale(String id, String idNft, double price, LocalDateTime timeLeft, LocalDateTime creationDate) {
         this.id = id;
         this.idNft = idNft;
         this.price = price;
@@ -45,11 +45,11 @@ public class Sale {
         this.price = price;
     }
 
-    public LocalTime getTimeLeft() {
+    public LocalDateTime getTimeLeft() {
         return timeLeft;
     }
 
-    public LocalDate getCreationDate() {
+    public LocalDateTime getCreationDate() {
         return creationDate;
     }
 }

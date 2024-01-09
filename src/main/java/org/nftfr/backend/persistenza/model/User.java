@@ -19,9 +19,6 @@ public class User {
         this.isAdmin = isAdmin;
     }
 
-
-
-
     public String getName() {
         return name;
     }
