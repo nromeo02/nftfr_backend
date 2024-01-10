@@ -6,5 +6,5 @@ public interface UserDao {
     void register(User user);
     void update(User user);
     void delete(User user);
-    void findByUsername(String username);
+    User findByUsername(String username);
 }

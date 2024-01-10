@@ -5,6 +5,7 @@ import org.nftfr.backend.persistence.model.User;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class UserDaoPostgres implements UserDao {
@@ -56,7 +57,29 @@ public class UserDaoPostgres implements UserDao {
     }
 
     @Override
-    public void findByUsername(String username) {
+    public User findByUsername(String username) {
+        User user = null;
+        String query = "SELECT * FROM users WHERE username = ?";
 
+        try (PreparedStatement st = connection.prepareStatement(query)) {
+
+            st.setString(1, username);
+            ResultSet rs = st.executeQuery();
+
+            if (rs.next()) {
+                user = new User();
+                user.setUsername(rs.getString("username"));
+                user.setName(rs.getString("name"));
+                user.setSurname(rs.getString("surname"));
+                user.setPassword(rs.getString("password"));
+                user.setValue(rs.getLong("value"));
+                user.setRank(rs.getInt("rank"));
+                user.setAdmin(rs.getBoolean("admin"));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return user;
     }
 }

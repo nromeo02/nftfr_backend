@@ -67,7 +67,7 @@ public class NftDaoPostgres implements NftDao {
             throw new RuntimeException(e);
         }
     }
-    
+
     @Override
     public void update(Nft nft) {
         String query = "UPDATE nft SET author=?, owner=?, caption=?, title=?, value=?, tags=? WHERE id=?";
