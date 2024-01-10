@@ -90,7 +90,6 @@ public class NftDaoPostgres implements NftDao {
     }
 
     @Override
-//non so se passare l'id o un nft intero -----------------------------------------------------------------------------------------------------
     public void delete(String id) {
         String query = "delete from nft where id = ?";
         try{

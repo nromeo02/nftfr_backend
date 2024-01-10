@@ -13,7 +13,7 @@ public class DBManager {
     private static final String POSTGRES_PORT = "5432";
     private static final String DB_NAME = "nftfr";
     private static final String USERNAME = "postgres";
-    private static final String PASSWORD = "";
+    private static final String PASSWORD = "angelogay";
 
     private static DBManager instance = null;
     private Connection connection = null;

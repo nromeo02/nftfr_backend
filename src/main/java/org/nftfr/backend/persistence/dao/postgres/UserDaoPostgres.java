@@ -22,7 +22,7 @@ public class UserDaoPostgres implements UserDao {
             return false;
 
         // Insert this user into the database.
-        String query = "INSERT INTO \"user\" (username, name, surname, password) VALUES (?, ?, ?, ?);";
+        String query = "INSERT INTO users (username, name, surname, password) VALUES (?, ?, ?, ?);";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, user.getUsername());
             stmt.setString(2, user.getName());
@@ -64,7 +64,7 @@ public class UserDaoPostgres implements UserDao {
 
     @Override
     public User findByUsername(String username) {
-        String query = "SELECT name, surname, password, rank, admin FROM \"user\" WHERE username =?";
+        String query = "SELECT name, surname, password, rank, admin FROM users WHERE username =?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, username);
             ResultSet rs = stmt.executeQuery();
