@@ -8,7 +8,7 @@ public interface NftDao {
     public Nft findByPrimaryKey(String id);
     public void create(Nft nft);
     public void update (Nft nft);
-    public void delete (Nft nft);
+    public void delete (String id);
     public List<Nft> findByQuery(List<String> search);
     public List<Nft> findByTag(List<String> tag);
     public List<Nft> findByValue(int max, int min);

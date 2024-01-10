@@ -1,5 +1,6 @@
 package org.nftfr.backend.persistence.model;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Nft {
     private String id;
@@ -9,7 +10,7 @@ public class Nft {
     private String title;
     private double value;
     private ArrayList<String> tag;
-
+    public Nft(){}
     public Nft(String id, String author, String owner, String caption, String title, double value, ArrayList<String> tag) {
         this.id = id;
         this.author = author;
