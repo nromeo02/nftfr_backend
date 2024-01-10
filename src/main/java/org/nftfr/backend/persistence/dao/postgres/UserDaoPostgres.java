@@ -16,14 +16,20 @@ public class UserDaoPostgres implements UserDao {
     }
 
     @Override
-    public void register(User user) {
-        try {
-            PreparedStatement stmt = connection.prepareStatement("INSERT INTO user (username, name, surname, password) VALUES (?, ?, ?, ?);");
+    public boolean register(User user) {
+        // Make sure the username is available.
+        if (findByUsername(user.getUsername()) != null)
+            return false;
+
+        // Insert this user into the database.
+        String query = "INSERT INTO \"user\" (username, name, surname, password) VALUES (?, ?, ?, ?);";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, user.getUsername());
             stmt.setString(2, user.getName());
             stmt.setString(3, user.getSurname());
             stmt.setString(4, user.getPassword());
             stmt.executeUpdate();
+            return true;
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
@@ -58,28 +64,24 @@ public class UserDaoPostgres implements UserDao {
 
     @Override
     public User findByUsername(String username) {
-        User user = null;
-        String query = "SELECT * FROM users WHERE username = ?";
+        String query = "SELECT name, surname, password, rank, admin FROM \"user\" WHERE username =?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
 
-        try (PreparedStatement st = connection.prepareStatement(query)) {
+            if (!rs.next())
+                return null;
 
-            st.setString(1, username);
-            ResultSet rs = st.executeQuery();
-
-            if (rs.next()) {
-                user = new User();
-                user.setUsername(rs.getString("username"));
-                user.setName(rs.getString("name"));
-                user.setSurname(rs.getString("surname"));
-                user.setPassword(rs.getString("password"));
-                user.setValue(rs.getLong("value"));
-                user.setRank(rs.getInt("rank"));
-                user.setAdmin(rs.getBoolean("admin"));
-            }
+            User user = new User();
+            user.setUsername(username);
+            user.setName(rs.getString("name"));
+            user.setSurname(rs.getString("surname"));
+            user.setPassword(rs.getString("password"));
+            user.setRank(rs.getInt("rank"));
+            user.setAdmin(rs.getBoolean("admin"));
+            return user;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
-        return user;
     }
 }

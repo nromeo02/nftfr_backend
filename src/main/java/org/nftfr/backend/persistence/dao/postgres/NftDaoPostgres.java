@@ -106,7 +106,7 @@ public class NftDaoPostgres implements NftDao {
     @Override
     public List<Nft> findByQuery(List<String> search) {
         List<Nft> nfts = new ArrayList<>();
-        String query = "select * from nft where "
+        //String query = "select * from nft where "
         return null;
     }
 
