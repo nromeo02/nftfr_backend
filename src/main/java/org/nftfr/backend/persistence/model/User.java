@@ -1,22 +1,23 @@
 package org.nftfr.backend.persistence.model;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 public class User {
     private String username;
     private String name;
     private String surname;
-    private String password;
-    private Long value;
-    private int rank;
-    private boolean admin;
-    public User(){}
-    public User(String username, String name, String surname, String password, Long value, int rank, boolean admin) {
-        this.username = username;
-        this.name = name;
-        this.surname = surname;
-        this.password = password;
-        this.value = value;
-        this.rank = rank;
-        this.admin = admin;
+    private String encryptedPw;
+    private int rank = 0;
+    private boolean admin = false;
+
+    public User() {}
+
+    public String getUsername(){
+        return username;
+    }
+
+    public void setUsername(String s){
+        this.username = s;
     }
 
     public String getName() {
@@ -35,12 +36,12 @@ public class User {
         this.surname = surname;
     }
 
-    public Long getValue() {
-        return value;
+    public String getEncryptedPw() {
+        return encryptedPw;
     }
 
-    public void setValue(Long value) {
-        this.value = value;
+    public void setEncryptedPw(String encryptedPw) {
+        this.encryptedPw = encryptedPw;
     }
 
     public int getRank() {
@@ -55,24 +56,17 @@ public class User {
         return admin;
     }
 
-    public String getUsername(){
-        return username;
-    }
-
-    public void setUsername(String s){
-        this.username = s;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public void setAdmin(boolean admin) {
         this.admin = admin;
     }
 
+    public static String encryptPassword(String plainText) {
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        return encoder.encode(plainText);
+    }
+
+    public boolean verifyPassword(String password) {
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        return encoder.matches(password, this.encryptedPw);
+    }
 }

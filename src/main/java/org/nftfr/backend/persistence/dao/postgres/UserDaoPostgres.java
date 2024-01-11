@@ -22,12 +22,12 @@ public class UserDaoPostgres implements UserDao {
             return false;
 
         // Insert this user into the database.
-        String query = "INSERT INTO users (username, name, surname, password) VALUES (?, ?, ?, ?);";
+        String query = "INSERT INTO users (username, name, surname, encrypted_pw) VALUES (?, ?, ?, ?);";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, user.getUsername());
             stmt.setString(2, user.getName());
             stmt.setString(3, user.getSurname());
-            stmt.setString(4, user.getPassword());
+            stmt.setString(4, user.getEncryptedPw());
             stmt.executeUpdate();
             return true;
         } catch (SQLException ex) {
@@ -38,10 +38,10 @@ public class UserDaoPostgres implements UserDao {
     @Override
     public void update(User user) {
         try {
-            PreparedStatement stmt = connection.prepareStatement("UPDATE user SET name=?, surname=?, password=?, rank=?, admin=? WHERE username=?;");
+            PreparedStatement stmt = connection.prepareStatement("UPDATE users SET name=?, surname=?, encrypted_pw=?, rank=?, admin=? WHERE username=?;");
             stmt.setString(1, user.getName());
             stmt.setString(2, user.getSurname());
-            stmt.setString(3, user.getPassword());
+            stmt.setString(3, user.getEncryptedPw());
             stmt.setInt(4, user.getRank());
             stmt.setBoolean(5, user.isAdmin());
             stmt.setString(6, user.getUsername());
@@ -64,7 +64,7 @@ public class UserDaoPostgres implements UserDao {
 
     @Override
     public User findByUsername(String username) {
-        String query = "SELECT name, surname, password, rank, admin FROM users WHERE username =?";
+        String query = "SELECT name, surname, encrypted_pw, rank, admin FROM users WHERE username =?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, username);
             ResultSet rs = stmt.executeQuery();
@@ -76,7 +76,7 @@ public class UserDaoPostgres implements UserDao {
             user.setUsername(username);
             user.setName(rs.getString("name"));
             user.setSurname(rs.getString("surname"));
-            user.setPassword(rs.getString("password"));
+            user.setEncryptedPw(rs.getString("encrypted_pw"));
             user.setRank(rs.getInt("rank"));
             user.setAdmin(rs.getBoolean("admin"));
             return user;
