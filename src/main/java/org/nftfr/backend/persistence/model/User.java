@@ -2,6 +2,8 @@ package org.nftfr.backend.persistence.model;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.util.List;
+
 public class User {
     private String username;
     private String name;
@@ -9,8 +11,8 @@ public class User {
     private String encryptedPw;
     private int rank = 0;
     private boolean admin = false;
-
     public User() {}
+
 
     public String getUsername(){
         return username;
