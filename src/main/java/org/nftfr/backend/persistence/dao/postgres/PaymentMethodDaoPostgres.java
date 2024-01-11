@@ -20,7 +20,7 @@ public class PaymentMethodDaoPostgres implements PaymentMethodDao {
 
     @Override
     public void add(PaymentMethod paymentMethod) {
-        String query = "INSERT INTO paymentmethods (address, username, type, balance) VALUES (?, ?, ?, ?)";
+        String query = "INSERT INTO payment_methods (address, username, type, balance) VALUES (?, ?, ?, ?)";
 
         try (PreparedStatement st = connection.prepareStatement(query)) {
 
@@ -38,7 +38,7 @@ public class PaymentMethodDaoPostgres implements PaymentMethodDao {
 
     @Override
     public void delete(String address) {
-        String query = "DELETE FROM paymentmethods WHERE address = ?";
+        String query = "DELETE FROM payment_methods WHERE address = ?";
 
         try (PreparedStatement st = connection.prepareStatement(query)) {
 
@@ -53,7 +53,7 @@ public class PaymentMethodDaoPostgres implements PaymentMethodDao {
     @Override
     public List<PaymentMethod> findByUsername(String username) {
         List<PaymentMethod> paymentMethods = new ArrayList<>();
-        String query = "SELECT * FROM payment_method WHERE username = ?";
+        String query = "SELECT * FROM payment_methods WHERE username = ?";
 
         try (PreparedStatement st = connection.prepareStatement(query)) {
 
@@ -78,7 +78,7 @@ public class PaymentMethodDaoPostgres implements PaymentMethodDao {
 
     @Override
     public void update(PaymentMethod paymentMethod) {
-        String query = "UPDATE payment_method SET balance = ? WHERE address = ? AND username = ?";
+        String query = "UPDATE payment_methods SET balance = ? WHERE address = ? AND username = ?";
 
         try (PreparedStatement st = connection.prepareStatement(query)) {
 
