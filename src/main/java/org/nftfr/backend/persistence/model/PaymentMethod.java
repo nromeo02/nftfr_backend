@@ -2,13 +2,13 @@ package org.nftfr.backend.persistence.model;
 
 public class PaymentMethod {
     private String address;
-    private User user;
+    private String username;
     private int type;
     private double balance;
 
-    public PaymentMethod(String address, User user, int type,double balance) {
+    public PaymentMethod(String address, String username, int type,double balance) {
         this.address = address;
-        this.user = user;
+        this.username = username;
         this.type = type;
         this.balance = balance;
     }
@@ -21,12 +21,12 @@ public class PaymentMethod {
         this.address = address;
     }
 
-    public User getUser() {
-        return user;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUsername(String user) {
+        this.username = user;
     }
 
     public int getType() {
@@ -34,7 +34,7 @@ public class PaymentMethod {
     }
 
     public void setType(int type) {
-        type = type;
+        this.type = type;
     }
 
     public double getBalance() {

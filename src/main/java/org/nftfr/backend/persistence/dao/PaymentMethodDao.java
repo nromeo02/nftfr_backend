@@ -8,7 +8,7 @@ import java.util.List;
 public interface PaymentMethodDao {
     void add(PaymentMethod paymentMethod);
     void delete(String address);
-    List<PaymentMethod> findByUsername(User user);
+    List<PaymentMethod> findByUsername(String username);
     void update(PaymentMethod paymentMethod);//per il balance anche se cambia tutto nella query
 
 }
