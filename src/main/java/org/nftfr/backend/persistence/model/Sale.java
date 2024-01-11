@@ -5,18 +5,18 @@ public class Sale {
     private int id;
     private String idNft;
     private double price;
-    private LocalDateTime timeLeft;
     private LocalDateTime creationDate;
+    private LocalDateTime endTime;
 
-    public Sale(int id, String idNft, double price, LocalDateTime timeLeft, LocalDateTime creationDate) {
+    public Sale(int id, String idNft, double price,  LocalDateTime creationDate, LocalDateTime endTime) {
         this.id = id;
         this.idNft = idNft;
         this.price = price;
-        this.timeLeft = timeLeft;
+        this.endTime = endTime;
         this.creationDate = creationDate;
     }
     public void addDurationTime(Duration duration){
-        this.timeLeft = this.timeLeft.plus(duration);
+        this.endTime = this.endTime.plus(duration);
     }
     public void addDurationDate(Duration duration){
         this.creationDate = this.creationDate.plus(duration);
@@ -29,11 +29,11 @@ public class Sale {
         this.id = id;
     }
 
-    public String getidNft() {
+    public String getIdNft() {
         return idNft;
     }
 
-    public void setidNft(String idNft) {
+    public void setIdNft(String idNft) {
         this.idNft = idNft;
     }
 
@@ -45,11 +45,21 @@ public class Sale {
         this.price = price;
     }
 
-    public LocalDateTime getTimeLeft() {
-        return timeLeft;
+    public LocalDateTime getEndTime() {
+        return endTime;
     }
 
     public LocalDateTime getCreationDate() {
         return creationDate;
+    }
+
+
+
+    public void setCreationDate(LocalDateTime creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
     }
 }

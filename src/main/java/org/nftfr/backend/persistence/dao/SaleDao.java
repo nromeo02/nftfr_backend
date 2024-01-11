@@ -8,7 +8,7 @@ import java.util.List;
 public interface SaleDao {
     void add(Sale sale);
     void remove(int id);
-    List<Sale> findByUser(User user);
+    List<Sale> findByUser(String username);
     //List<Sale> findMoreRecent();
-    List<Sale> findByPrice(int min, int max);
+    List<Sale> findByPrice(double min, double max);
 }
