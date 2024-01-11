@@ -54,7 +54,7 @@ public class UserDaoPostgres implements UserDao {
     @Override
     public void delete(User user) {
         try {
-            PreparedStatement stmt = connection.prepareStatement("DELETE FROM user WHERE username=?;");
+            PreparedStatement stmt = connection.prepareStatement("DELETE FROM users WHERE username=?;");
             stmt.setString(1, user.getUsername());
             stmt.executeUpdate();
         } catch (SQLException ex) {
