@@ -8,13 +8,14 @@ import org.nftfr.backend.persistence.model.User;
 import org.nftfr.backend.rest.model.AuthToken;
 import org.nftfr.backend.rest.model.BasicToken;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
+@RequestMapping("/user")
 public class UserRest {
+    private final UserDao userDao = DBManager.getInstance().getUserDao();
+
     private record RegisterParams(String username, String name, String surname, String password) {
         public User asUser() {
             User user = new User();
@@ -26,16 +27,15 @@ public class UserRest {
         }
     }
 
-    @PostMapping(value = "/user/register")
+    @PostMapping(value = "/register")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void register(@RequestBody RegisterParams params, HttpServletResponse res) {
-        UserDao userDao = DBManager.getInstance().getUserDao();
         if (!userDao.register(params.asUser()))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Username is already taken");
-
-        res.setStatus(HttpStatus.NO_CONTENT.value());
     }
 
-    @PostMapping(value = "/user/login")
+    @PostMapping(value = "/login")
+    @ResponseStatus(HttpStatus.OK)
     public AuthToken login(HttpServletRequest req, HttpServletResponse res) {
         // Get basic token.
         BasicToken token = BasicToken.fromRequest(req);
@@ -45,7 +45,6 @@ public class UserRest {
         }
 
         // Find user.
-        UserDao userDao = DBManager.getInstance().getUserDao();
         User user = userDao.findByUsername(token.username());
         if (user == null) {
             res.setHeader("WWW-Authenticate", "Basic");
@@ -58,6 +57,6 @@ public class UserRest {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication failed");
         }
 
-        return AuthToken.generate(token.username());
+        return AuthToken.generate(user);
     }
 }
