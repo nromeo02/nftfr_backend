@@ -9,16 +9,30 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
+
 //create, delete, findByUser,
 @RestController
 @RequestMapping("/nft")
 public class NftRest {
     private NftDao nftDao = DBManager.getInstance().getNftDao();
-
+    private record CreateParams(String caption, String title, double value, ArrayList<String> tag){
+        public Nft asNft(String username){
+            Nft nft = new Nft();
+            nft.setCaption(caption);
+            nft.setTitle(title);
+            nft.setValue(value);
+            nft.setTag(tag);
+            nft.setAuthor(username);
+            nft.setOwner(username);
+            nft.setId("jsifnwir");
+            return nft;
+        }
+    }
     @PostMapping("/create")
-    public ResponseEntity<String> createNft(@RequestBody Nft nft) {
+    public ResponseEntity<String> createNft(@RequestBody CreateParams createparams) {
         try {
-            nftDao.create(nft);
+            nftDao.create(createparams.asNft("john_doe"));
             return new ResponseEntity<>("NFT creato con successo", HttpStatus.CREATED);
         } catch (Exception e) {
             e.printStackTrace();
@@ -26,12 +40,11 @@ public class NftRest {
         return new ResponseEntity<>("Errore durante la creazione dell'NFT: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @DeleteMapping(value = "/nft/{id}")
+    @DeleteMapping(value = "delete/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteNft(@PathVariable String id) {
-        NftDao nftDao = DBManager.getInstance().getNftDao();
-        Nft nft = nftDao.findByPrimaryKey(id);
 
+        Nft nft = nftDao.findByPrimaryKey(id);
         if (nft == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nft not found");
         }

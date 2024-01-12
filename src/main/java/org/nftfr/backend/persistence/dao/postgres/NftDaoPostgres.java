@@ -33,7 +33,7 @@ public class NftDaoPostgres implements NftDao {
                 nft.setTitle(rs.getString("title"));
                 nft.setValue(rs.getDouble("value"));
 
-                String tagsString = rs.getString("tag");
+                String tagsString = rs.getString("tags");
                 ArrayList<String> tags = new ArrayList<>();
                 String[] tagArray = tagsString.split(",");
                 for (String tag : tagArray) {
@@ -112,7 +112,7 @@ public class NftDaoPostgres implements NftDao {
     @Override
     public List<Nft> findByTag(List<String> tag) {
         List<Nft> nfts = new ArrayList<>();
-        String query = "select * from nft where tag = ?";
+        String query = "select * from nft where tags LIKE ?";
         try{
             PreparedStatement st = connection.prepareStatement(query);
             for (String tags : tag){
