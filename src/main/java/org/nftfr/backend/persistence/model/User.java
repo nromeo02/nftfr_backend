@@ -2,8 +2,6 @@ package org.nftfr.backend.persistence.model;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import java.util.List;
-
 public class User {
     private String username;
     private String name;
