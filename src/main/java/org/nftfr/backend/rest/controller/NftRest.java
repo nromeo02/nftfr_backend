@@ -1,4 +1,4 @@
-package org.nftfr.backend.controller;
+package org.nftfr.backend.rest.controller;
 
 import org.nftfr.backend.persistence.DBManager;
 import org.nftfr.backend.persistence.dao.NftDao;
