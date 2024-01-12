@@ -12,8 +12,8 @@ public class Sale {
         this.id = id;
         this.idNft = idNft;
         this.price = price;
-        this.endTime = endTime;
         this.creationDate = creationDate;
+        this.endTime = endTime;
     }
     public void addDurationTime(Duration duration){
         this.endTime = this.endTime.plus(duration);
