@@ -59,7 +59,7 @@ public class SaleRest {
         }
     }
 
-    @PostMapping("/buy/{id}")
+    @GetMapping("/buy/{id}")//bisogna implementare il metodo di pagamento passare un address tramite stringa
     public ResponseEntity<String> buy(@PathVariable int id, HttpServletRequest request) {
         AuthToken authToken = AuthToken.fromRequest(request);
         if (authToken == null) {
