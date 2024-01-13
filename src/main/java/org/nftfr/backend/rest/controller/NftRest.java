@@ -18,7 +18,7 @@ import java.util.ArrayList;
 @RestController
 @RequestMapping("/nft")
 public class NftRest {
-    private NftDao nftDao = DBManager.getInstance().getNftDao();
+    private final  NftDao nftDao = DBManager.getInstance().getNftDao();
 
     private record CreateParams(String caption, String title, double value, ArrayList<String> tag){
         public Nft asNft(String username){

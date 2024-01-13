@@ -69,10 +69,10 @@ public class SaleDaoPostgres implements SaleDao {
 
             while (rs.next()) {
                 int id = rs.getInt("id");
-                String idNft = rs.getString("nftid");
+                String idNft = rs.getString("nft_id");
                 double price = rs.getDouble("price");
-                LocalDateTime creationDate = rs.getObject("creationdate", LocalDateTime.class);
-                LocalDateTime timeLeft = rs.getObject("endtime", LocalDateTime.class);
+                LocalDateTime creationDate = rs.getObject("creation_date", LocalDateTime.class);
+                LocalDateTime timeLeft = rs.getObject("end_time", LocalDateTime.class);
 
                 Sale sale = new Sale(id, idNft, price, timeLeft, creationDate);
                 sales.add(sale);
@@ -98,9 +98,9 @@ public class SaleDaoPostgres implements SaleDao {
 
             while (rs.next()) {
                 int id = rs.getInt("id");
-                String idNft = rs.getString("id_nft");
+                String idNft = rs.getString("nft_id");
                 double price = rs.getDouble("price");
-                LocalDateTime timeLeft = rs.getObject("time_left", LocalDateTime.class);
+                LocalDateTime timeLeft = rs.getObject("end_time", LocalDateTime.class);
                 LocalDateTime creationDate = rs.getObject("creation_date", LocalDateTime.class);
 
                 Sale sale = new Sale(id, idNft, price, timeLeft, creationDate);
@@ -112,5 +112,30 @@ public class SaleDaoPostgres implements SaleDao {
         }
 
         return sales;
+    }
+
+    @Override
+    public Sale findById(int id) {
+        Sale sale = new Sale();
+        String query = "SELECT * FROM sale WHERE id = ?";
+
+        try (PreparedStatement st = connection.prepareStatement(query)) {
+            st.setInt(1, id);
+
+            ResultSet rs = st.executeQuery();
+
+            if (rs.next()) {
+                String idNft = rs.getString("nft_id");
+                double price = rs.getDouble("price");
+                LocalDateTime creationDate = rs.getObject("creation_date", LocalDateTime.class);
+                LocalDateTime endTime = rs.getObject("end_time", LocalDateTime.class);
+
+                return new Sale(id, idNft, price, creationDate, endTime);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return null;
     }
 }

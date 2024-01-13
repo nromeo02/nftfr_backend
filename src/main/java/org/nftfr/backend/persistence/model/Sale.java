@@ -6,8 +6,8 @@ public class Sale {
     private String idNft;
     private double price;
     private LocalDateTime creationDate;
-    private LocalDateTime endTime;
-
+    private LocalDateTime endTime = null;
+    public Sale(){}
     public Sale(int id, String idNft, double price,  LocalDateTime creationDate, LocalDateTime endTime) {
         this.id = id;
         this.idNft = idNft;

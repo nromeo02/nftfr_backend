@@ -11,4 +11,5 @@ public interface SaleDao {
     List<Sale> findByUser(String username);
     //List<Sale> findMoreRecent();
     List<Sale> findByPrice(double min, double max);
+    Sale findById(int id);
 }

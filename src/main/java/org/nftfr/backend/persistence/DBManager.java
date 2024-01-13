@@ -1,8 +1,10 @@
 package org.nftfr.backend.persistence;
 
 import org.nftfr.backend.persistence.dao.NftDao;
+import org.nftfr.backend.persistence.dao.SaleDao;
 import org.nftfr.backend.persistence.dao.UserDao;
 import org.nftfr.backend.persistence.dao.postgres.NftDaoPostgres;
+import org.nftfr.backend.persistence.dao.postgres.SaleDaoPostgres;
 import org.nftfr.backend.persistence.dao.postgres.UserDaoPostgres;
 
 import java.sql.Connection;
@@ -47,4 +49,6 @@ public class DBManager {
     // public PaymentMethodDao getPaymentDao() { return new PaymentMethodDaoPostgres(getConnection());}
     // public SaleDao getSaleDao() { return new SaleDaoPostgres(getConnection()); }
     public UserDao getUserDao() { return new UserDaoPostgres(getConnection()); }
+    public SaleDao getSaleDao() { return new SaleDaoPostgres(getConnection()); }
+
 }
