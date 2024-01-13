@@ -47,7 +47,6 @@ public class DBManager {
 
     public NftDao getNftDao() { return new NftDaoPostgres(getConnection()); }
     // public PaymentMethodDao getPaymentDao() { return new PaymentMethodDaoPostgres(getConnection());}
-    // public SaleDao getSaleDao() { return new SaleDaoPostgres(getConnection()); }
     public UserDao getUserDao() { return new UserDaoPostgres(getConnection()); }
     public SaleDao getSaleDao() { return new SaleDaoPostgres(getConnection()); }
 

@@ -22,7 +22,7 @@ public class UserDaoPostgres implements UserDao {
             return false;
 
         // Insert this user into the database.
-        String query = "INSERT INTO users (username, name, surname, encrypted_pw) VALUES (?, ?, ?, ?);";
+        final String query = "INSERT INTO users (username, name, surname, encrypted_pw) VALUES (?, ?, ?, ?);";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, user.getUsername());
             stmt.setString(2, user.getName());
@@ -37,14 +37,13 @@ public class UserDaoPostgres implements UserDao {
 
     @Override
     public void update(User user) {
-        try {
-            PreparedStatement stmt = connection.prepareStatement("UPDATE users SET name=?, surname=?, encrypted_pw=?, rank=?, admin=? WHERE username=?;");
+        final String query = "UPDATE users SET name=?, surname=?, encrypted_pw=?, rank=? WHERE username=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, user.getName());
             stmt.setString(2, user.getSurname());
             stmt.setString(3, user.getEncryptedPw());
             stmt.setInt(4, user.getRank());
-            stmt.setBoolean(5, user.isAdmin());
-            stmt.setString(6, user.getUsername());
+            stmt.setString(5, user.getUsername());
             stmt.executeUpdate();
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
@@ -52,10 +51,10 @@ public class UserDaoPostgres implements UserDao {
     }
 
     @Override
-    public void delete(User user) {
-        try {
-            PreparedStatement stmt = connection.prepareStatement("DELETE FROM users WHERE username=?;");
-            stmt.setString(1, user.getUsername());
+    public void delete(String username) {
+        final String query = "DELETE FROM users WHERE username=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, username);
             stmt.executeUpdate();
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
@@ -64,7 +63,7 @@ public class UserDaoPostgres implements UserDao {
 
     @Override
     public User findByUsername(String username) {
-        String query = "SELECT name, surname, encrypted_pw, rank, admin FROM users WHERE username =?";
+        String query = "SELECT name, surname, encrypted_pw, rank, admin FROM users WHERE username=?;";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, username);
             ResultSet rs = stmt.executeQuery();

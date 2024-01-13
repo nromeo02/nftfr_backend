@@ -7,6 +7,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import org.nftfr.backend.persistence.model.User;
+import org.springframework.http.HttpStatus;
 
 import javax.crypto.SecretKey;
 import java.util.Base64;
@@ -46,14 +47,14 @@ public record AuthToken(@JsonIgnore String username, @JsonIgnore boolean admin, 
             try {
                 Claims tokenData = Jwts.parser().verifyWith(SECRET).build().parseSignedClaims(token).getPayload();
                 if (tokenData.getExpiration().before(new Date()))
-                    return null;
+                    throw new ClientErrorException(HttpStatus.FORBIDDEN, "Token expired");
 
                 return new AuthToken(tokenData.getSubject(), tokenData.get("admin", Boolean.class), token);
             } catch (JwtException ex) {
-                return null;
+                throw new ClientErrorException(HttpStatus.FORBIDDEN, "Invalid token");
             }
         }
 
-        return null;
+        throw new ClientErrorException(HttpStatus.FORBIDDEN, "Token required");
     }
 }
