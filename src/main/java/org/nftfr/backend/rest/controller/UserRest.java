@@ -77,19 +77,25 @@ public class UserRest {
         userDao.update(user);
     }
 
-    @DeleteMapping(value = "/delete/{username}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable String username, HttpServletRequest req) {
-        AuthToken authToken = AuthToken.fromRequest(req);
-
-        // Only admins and the user itself can delete a user.
-        if (!authToken.username().equals(username) && !authToken.admin())
-            throw new ClientErrorException(HttpStatus.FORBIDDEN, "Invalid permissions");
-
+    private void delete(String username) {
         User user = userDao.findByUsername(username);
         if (user == null)
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "The user does not exist");
 
         userDao.delete(username);
+    }
+
+    @DeleteMapping(value = "/delete")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteSelf(HttpServletRequest req) { delete(AuthToken.fromRequest(req).username()); }
+
+    @DeleteMapping(value = "/delete/{username}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUser(@PathVariable String username, HttpServletRequest req) {
+        AuthToken authToken = AuthToken.fromRequest(req);
+        if (!authToken.admin())
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "You don't have the permissions for this action");
+
+       delete(username);
     }
 }

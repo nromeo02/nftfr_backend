@@ -69,10 +69,23 @@ public class NftRest {
         return Collections.singletonMap("id", nft.getId());
     }
 
-    @PutMapping("/update")
-    @ResponseStatus(HttpStatus.OK)
-    public void update(@RequestBody UpdateParams params, HttpServletRequest req) {
-        // TODO
+    @PutMapping("/update/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void update(@PathVariable String id, @RequestBody UpdateParams params, HttpServletRequest req) {
+        AuthToken authToken = AuthToken.fromRequest(req);
+        Nft nft = nftDao.findByPrimaryKey(id);
+        if (nft == null)
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "The nft does not exist");
+
+        // Only owners can update their nfts.
+        if (!nft.getOwner().equals(authToken.username()))
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "You don't have the permissions for this action");
+
+        nft.setTitle(params.title());
+        nft.setCaption(params.caption());
+        nft.setValue(params.value());
+        nft.setTag(params.tag());
+        nftDao.update(nft);
     }
 
     @DeleteMapping(value = "delete/{id}")
@@ -85,7 +98,7 @@ public class NftRest {
 
         // Only admins and the owner can delete a nft.
         if (!nft.getOwner().equals(authToken.username()) && !authToken.admin())
-            throw new ClientErrorException(HttpStatus.FORBIDDEN, "Invalid permissions");
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "You don't have the permissions for this action");
 
         nftDao.delete(id);
         // TODO: delete image.
