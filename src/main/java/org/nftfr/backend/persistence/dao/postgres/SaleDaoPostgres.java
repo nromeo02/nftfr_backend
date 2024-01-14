@@ -21,7 +21,7 @@ public class SaleDaoPostgres implements SaleDao {
 
     @Override
     public void add(Sale sale) {
-        String query = "INSERT INTO sale (id, nftid, price, creationdate, endtime) VALUES (?, ?, ?, ?)";
+        String query = "INSERT INTO sale (id, nft_id, price, creation_date, end_time) VALUES (?, ?, ?, ?, ?)";
 
         try (PreparedStatement st = connection.prepareStatement(query)) {
 
@@ -60,7 +60,7 @@ public class SaleDaoPostgres implements SaleDao {
     public List<Sale> findByUser(String username) {
 
         List<Sale> sales = new ArrayList<>();
-        String query = "SELECT * FROM sale WHERE idNft IN (SELECT id FROM nft WHERE owner = ?)";
+        String query = "SELECT * FROM sale WHERE nft_id IN (SELECT id FROM nft WHERE owner = ?)";
 
         try (PreparedStatement st = connection.prepareStatement(query)) {
             st.setString(1, username);

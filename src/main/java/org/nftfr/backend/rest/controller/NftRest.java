@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 
-//create, delete, findByUser,
+//caricamento dell'immagine, le find, prende l'id e ritorna l'immagine
 @RestController
 @RequestMapping("/nft")
 public class NftRest {

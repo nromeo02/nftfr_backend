@@ -8,6 +8,7 @@ import org.nftfr.backend.persistence.model.Sale;
 import org.nftfr.backend.persistence.model.Nft;
 import org.nftfr.backend.persistence.model.User;
 import org.nftfr.backend.rest.model.AuthToken;
+import org.nftfr.backend.rest.model.ClientErrorException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,7 @@ public class SaleRest {
         public Sale asSale(){
             Sale sale = new Sale();
             sale.setId(1);
-            sale.setIdNft("prenderla dal database? o la passiamo direttamente come stringa?");
+            sale.setIdNft(idNft);
             sale.setPrice(price);
             sale.setCreationDate(creationDate);
             if(duration.isZero()){
@@ -36,7 +37,8 @@ public class SaleRest {
             return sale;
         }
     }
-    @PostMapping("/create")
+    //funziona ma bisogna settare l'id con id broker e bisogna passare la giusta string idnft
+    @PutMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<String> createSale(@RequestBody CreateParams createParams, HttpServletRequest request) {
         AuthToken authToken =  AuthToken.fromRequest(request);
@@ -53,9 +55,14 @@ public class SaleRest {
         if(!authToken.admin()){
             throw new RuntimeException("Non sei amministratore");
         }
-        else{
-            saleDao.remove(id);
-            return ResponseEntity.ok("Sale deleted successfully");
+        else {
+            Sale sale = saleDao.findById(id);
+            if (sale == null) {
+                throw new ClientErrorException(HttpStatus.NOT_FOUND, "Nft not found");
+            } else {
+                saleDao.remove(id);
+                return ResponseEntity.ok("Sale deleted successfully");
+            }
         }
     }
 
