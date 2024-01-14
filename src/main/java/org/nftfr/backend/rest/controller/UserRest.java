@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@CrossOrigin(value = "http://localhost:4200", allowCredentials = "true")
 @RequestMapping("/user")
 public class UserRest {
     private final UserDao userDao = DBManager.getInstance().getUserDao();
@@ -27,21 +28,18 @@ public class UserRest {
         }
     }
 
-    public record UpdateParams(String name, String surname, String password, int rank) {
+    public record UpdateParams(String name, String surname, String password) {
         public User asUser(AuthToken authToken) {
             User user = new User();
             user.setUsername(authToken.username());
             user.setName(name);
             user.setSurname(surname);
             user.setEncryptedPw(User.encryptPassword(password));
-            user.setRank(rank);
             return user;
         }
     }
 
-    public record DeleteParams(String username) {}
-
-    @PostMapping(value = "/register")
+    @PutMapping(value = "/register")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void register(@RequestBody RegisterParams params) {
         if (!userDao.register(params.asUser()))
@@ -74,22 +72,21 @@ public class UserRest {
         return AuthToken.generate(user);
     }
 
-    @PostMapping(value = "/update")
+    @PutMapping(value = "/update")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(@RequestBody UpdateParams params, HttpServletRequest req) {
         AuthToken authToken = AuthToken.fromRequest(req);
-        // TODO: rank update? admin update?
         userDao.update(params.asUser(authToken));
     }
 
-    @PostMapping(value = "/delete")
+    @DeleteMapping(value = "/delete/{username}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@RequestBody DeleteParams params, HttpServletRequest req) {
+    public void delete(@PathVariable String username, HttpServletRequest req) {
         AuthToken authToken = AuthToken.fromRequest(req);
         // Only admins and the user itself can delete a user.
-        if (!authToken.username().equals(params.username()) && !authToken.admin())
+        if (!authToken.username().equals(username) && !authToken.admin())
             throw new ClientErrorException(HttpStatus.FORBIDDEN, "Admin privileges required");
 
-        userDao.delete(params.username());
+        userDao.delete(username);
     }
 }
