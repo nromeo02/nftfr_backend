@@ -28,16 +28,7 @@ public class UserRest {
         }
     }
 
-    public record UpdateParams(String name, String surname, String password) {
-        public User asUser(AuthToken authToken) {
-            User user = new User();
-            user.setUsername(authToken.username());
-            user.setName(name);
-            user.setSurname(surname);
-            user.setEncryptedPw(User.encryptPassword(password));
-            return user;
-        }
-    }
+    public record UpdateParams(String name, String surname, String password) {}
 
     @PutMapping(value = "/register")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -53,7 +44,7 @@ public class UserRest {
         BasicToken token = BasicToken.fromRequest(req);
         if (token == null) {
             res.setHeader("WWW-Authenticate", "Basic");
-            throw new ClientErrorException(HttpStatus.UNAUTHORIZED, "Missing/invalid header");
+            throw new ClientErrorException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }
 
         // Find user.
@@ -76,16 +67,28 @@ public class UserRest {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(@RequestBody UpdateParams params, HttpServletRequest req) {
         AuthToken authToken = AuthToken.fromRequest(req);
-        userDao.update(params.asUser(authToken));
+        User user = userDao.findByUsername(authToken.username());
+        if (user == null)
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "The user does not exist");
+
+        user.setName(params.name());
+        user.setSurname(params.surname());
+        user.setEncryptedPw(User.encryptPassword(params.password()));
+        userDao.update(user);
     }
 
     @DeleteMapping(value = "/delete/{username}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable String username, HttpServletRequest req) {
         AuthToken authToken = AuthToken.fromRequest(req);
+
         // Only admins and the user itself can delete a user.
         if (!authToken.username().equals(username) && !authToken.admin())
-            throw new ClientErrorException(HttpStatus.FORBIDDEN, "Admin privileges required");
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "Invalid permissions");
+
+        User user = userDao.findByUsername(username);
+        if (user == null)
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "The user does not exist");
 
         userDao.delete(username);
     }
