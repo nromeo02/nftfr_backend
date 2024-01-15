@@ -3,14 +3,14 @@ package org.nftfr.backend.persistence.dao;
 import org.nftfr.backend.persistence.model.Nft;
 
 import java.util.List;
+import java.util.Set;
 
 public interface NftDao {
-    public Nft findByPrimaryKey(String id);
-    public void create(Nft nft);
-    public void update (Nft nft);
-    public void delete (String id);
-    public List<Nft> findByQuery(List<String> search);
-    public List<Nft> findByTag(List<String> tag);
-    public List<Nft> findByValue(int max, int min);
-    //range per cui cercare gli nft o magari si puo anche fare maggiore di max o minore di min senza range
+    void create(Nft nft);
+    void update (Nft nft);
+    void delete (String id);
+    Nft findByPrimaryKey(String id);
+    List<Nft> findByOwner(String username);
+    List<Nft> findByAuthor(String username);
+    List<Nft> findByQuery(Set<String> tokens, double minPrice, double maxPrice);
 }
