@@ -5,7 +5,7 @@ public class PaymentMethod {
     private String username;
     private int type;
     private double balance;
-
+    public PaymentMethod(){}
     public PaymentMethod(String address, String username, int type,double balance) {
         this.address = address;
         this.username = username;

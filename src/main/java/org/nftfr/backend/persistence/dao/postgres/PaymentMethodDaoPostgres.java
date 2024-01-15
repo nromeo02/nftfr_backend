@@ -77,6 +77,33 @@ public class PaymentMethodDaoPostgres implements PaymentMethodDao {
     }
 
     @Override
+    public PaymentMethod findByAddress(String address) {
+        String query = "SELECT * FROM payment_methods WHERE address = ?";
+        PaymentMethod paymentMethod = new PaymentMethod();
+        try (PreparedStatement st = connection.prepareStatement(query)) {
+
+            st.setString(1, address);
+            ResultSet rs = st.executeQuery();
+
+            if (rs.next()) {
+                String username = rs.getString("username");
+                int type = rs.getInt("type");
+                double balance = rs.getDouble("balance");
+
+                paymentMethod.setAddress(address);
+                paymentMethod.setUsername(username);
+                paymentMethod.setType(type);
+                paymentMethod.setBalance(balance);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return paymentMethod;
+    }
+
+    @Override
     public void update(PaymentMethod paymentMethod) {
         String query = "UPDATE payment_methods SET balance = ? WHERE address = ? AND username = ?";
 
