@@ -1,7 +1,6 @@
 package org.nftfr.backend.rest.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.nftfr.backend.persistence.DBManager;
 import org.nftfr.backend.persistence.dao.UserDao;
 import org.nftfr.backend.persistence.model.User;
@@ -37,28 +36,22 @@ public class UserRest {
             throw new ClientErrorException(HttpStatus.CONFLICT, "Username is already taken");
     }
 
-    @PostMapping(value = "/login")
+    @GetMapping(value = "/login")
     @ResponseStatus(HttpStatus.OK)
-    public AuthToken login(HttpServletRequest req, HttpServletResponse res) {
+    public AuthToken login(HttpServletRequest req) {
         // Get basic token.
         BasicToken token = BasicToken.fromRequest(req);
-        if (token == null) {
-            res.setHeader("WWW-Authenticate", "Basic");
+        if (token == null)
             throw new ClientErrorException(HttpStatus.UNAUTHORIZED, "Invalid token");
-        }
 
         // Find user.
         User user = userDao.findByUsername(token.username());
-        if (user == null) {
-            res.setHeader("WWW-Authenticate", "Basic");
+        if (user == null)
             throw new ClientErrorException(HttpStatus.UNAUTHORIZED, "User not found");
-        }
 
         // Verify password.
-        if (!user.verifyPassword(token.password())) {
-            res.setHeader("WWW-Authenticate", "Basic");
+        if (!user.verifyPassword(token.password()))
             throw new ClientErrorException(HttpStatus.UNAUTHORIZED, "Authentication failed");
-        }
 
         return AuthToken.generate(user);
     }
