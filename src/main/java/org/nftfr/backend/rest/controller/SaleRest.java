@@ -70,58 +70,10 @@ public class SaleRest {
             }
         }
     }
-/*
-    @PutMapping("/buy/{id}")//bisogna implementare il metodo di pagamento passare un address tramite stringa
-    //questa funziona solo per i prezzi fissi
-    public ResponseEntity<String> buy(@PathVariable int id, HttpServletRequest request, String username, String address) {
-        AuthToken authToken = AuthToken.fromRequest(request);
-        if (authToken == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
-        } else {
-
-            Sale sale = saleDao.findById(id);
-
-            if (sale == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Sale not found");
-            }
-            Nft nft = nftDao.findByPrimaryKey(sale.getIdNft());
-
-            if (nft == null) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("NFT not found");
-            }
-
-            User buyer = DBManager.getInstance().getUserDao().findByUsername(authToken.username());
-
-            if (buyer == null) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Buyer not found");
-            }
-            PaymentMethod paymentMethod = paymentMethodDao.findByAddress(address);
-            // Verifica se l'acquirente possiede già l'NFT
-            if (!nft.getOwner().equals(authToken.username())) {
-                // L'acquirente non possiede l'NFT, quindi procedi con l'acquisto
-                // Rimuovi la vendita
-                if (paymentMethod.getBalance() >= sale.getPrice()) {
-                    saleDao.remove(id);
-                    nft.setOwner(authToken.username());
-                    nftDao.update(nft);
-                    buyer.setRank(buyer.getRank() + 1);
-                    DBManager.getInstance().getUserDao().update(buyer);
-                    paymentMethod.setBalance(paymentMethod.getBalance() - sale.getPrice());
-                    paymentMethodDao.update(paymentMethod);
-                    return ResponseEntity.ok("Purchase successful");
-                } else {
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Not enough money in this payment method");
-                }
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Buyer already owns the NFT");
-            }
-        }
-    }
-  */
-
 
     @PutMapping("/buy/{id}")
-    public ResponseEntity<String> buy(@PathVariable int id, HttpServletRequest request, @RequestBody Map<String, String> requestBody) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void buy(@PathVariable int id, HttpServletRequest request, @RequestBody Map<String, String> requestBody) {
         AuthToken authToken = AuthToken.fromRequest(request);
         if (authToken == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
@@ -129,70 +81,48 @@ public class SaleRest {
             Sale sale = saleDao.findById(id);
 
             if (sale == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Sale not found");
+                throw new ClientErrorException(HttpStatus.NOT_FOUND, "The sale doesn't exist");
             }
-
             Nft nft = nftDao.findByPrimaryKey(sale.getIdNft());
-
             if (nft == null) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("NFT not found");
+                throw new ClientErrorException(HttpStatus.NOT_FOUND, "Nft not found");
             }
-
             User buyer = DBManager.getInstance().getUserDao().findByUsername(authToken.username());
-            System.out.println("Buyer's username: " + authToken.username());
             if (buyer == null) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Buyer not found");
+                throw new ClientErrorException(HttpStatus.NOT_FOUND, "Buyer not found");
             }
-
-            String address = requestBody.get("address");  // Estrai l'indirizzo dal corpo della richiesta JSON
-            System.out.println("address: " + address);
+            String address = requestBody.get("address");
+            if (address == null || address.isEmpty()) {
+                throw new ClientErrorException(HttpStatus.NOT_FOUND, "Address not found or empty");
+            }
             PaymentMethod paymentMethod = paymentMethodDao.findByAddress(address);
-            System.out.println("Buyer's address: " + paymentMethod.getAddress());
-
-            // Verifica se l'acquirente possiede già l'NFT
-        if (!nft.getOwner().equals(authToken.username())) {
-            // L'acquirente non possiede l'NFT, quindi procedi con l'acquisto
-            // Rimuovi la vendita
-            try {
-                if (paymentMethod != null) {
-                    System.out.println("Buyer's balance before purchase: " + paymentMethod.getBalance());
-                    System.out.println("Buyer's address: " + paymentMethod.getAddress());
-
-                    System.out.println("Buyer's username: " + paymentMethod.getUsername());
-
-                    System.out.println("Sale price: " + sale.getPrice());
-
-                    if (paymentMethod.getBalance() >= sale.getPrice()) {
-                        saleDao.remove(id);
-                        nft.setOwner(authToken.username());
-                        nftDao.update(nft);
-                        buyer.setRank(buyer.getRank() + 1);
-                        DBManager.getInstance().getUserDao().update(buyer);
-                        paymentMethod.setBalance(paymentMethod.getBalance() - sale.getPrice());
-                        paymentMethodDao.update(paymentMethod);
-
-                        System.out.println("Buyer's balance after purchase: " + paymentMethod.getBalance());
-                        return ResponseEntity.ok("Purchase successful");
+            if (!nft.getOwner().equals(authToken.username())) {
+                try {
+                    if (paymentMethod != null) {
+                        if (paymentMethod.getBalance() >= sale.getPrice()) {
+                            paymentMethod.setBalance(paymentMethod.getBalance() - sale.getPrice());
+                            paymentMethodDao.update(paymentMethod);
+                            nft.setOwner(authToken.username());
+                            nftDao.update(nft);
+                            buyer.setRank(buyer.getRank() + 1);
+                            DBManager.getInstance().getUserDao().update(buyer);
+                            saleDao.remove(id);
+                        } else {
+                            throw new ClientErrorException(HttpStatus.PAYMENT_REQUIRED, "Insufficient balance");
+                        }
                     } else {
-                        System.out.println("Insufficient balance");
-                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Insufficient balance");
+                        throw new ClientErrorException(HttpStatus.NOT_FOUND, "Payment method not found");
                     }
-                } else {
-                    System.out.println("Payment method not found");
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Payment method not found");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Exception details: " + e.getMessage());
+                    throw new ClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error");
                 }
-            } catch (Exception e) {
-                // Aggiungi log per catturare l'eccezione
-                e.printStackTrace();
-                System.out.println("Exception details: " + e.getMessage());
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal Server Error");
+            } else {
+                throw new ClientErrorException(HttpStatus.FORBIDDEN, "Buyer already owns the NFT");
             }
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Buyer already owns the NFT");
         }
     }
-}
-
 }
 
 

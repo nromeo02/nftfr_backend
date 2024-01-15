@@ -74,13 +74,13 @@ public class NftDaoPostgres implements NftDao {
 
         try (PreparedStatement st = connection.prepareStatement(query)){
 
-            st.setString(1, nft.getId());
-            st.setString(2, nft.getAuthor());
-            st.setString(3, nft.getOwner());
-            st.setString(4, nft.getCaption());
-            st.setString(5, nft.getTitle());
-            st.setDouble(6, nft.getValue());
-            st.setString(7, String.join(",", nft.getTag()));
+            st.setString(1, nft.getAuthor());
+            st.setString(2, nft.getOwner());
+            st.setString(3, nft.getCaption());
+            st.setString(4, nft.getTitle());
+            st.setDouble(5, nft.getValue());
+            st.setString(6, String.join(",", nft.getTag()));
+            st.setString(7, nft.getId());
 
             st.executeUpdate();
             }

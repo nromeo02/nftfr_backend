@@ -109,9 +109,9 @@ public class PaymentMethodDaoPostgres implements PaymentMethodDao {
 
         try (PreparedStatement st = connection.prepareStatement(query)) {
 
-            st.setString(1, paymentMethod.getAddress());
-            st.setString(2, paymentMethod.getUsername());
-            st.setDouble(3, paymentMethod.getBalance());
+            st.setDouble(1, paymentMethod.getBalance());
+            st.setString(2, paymentMethod.getAddress());
+            st.setString(3, paymentMethod.getUsername());
 
             int rowsUpdated = st.executeUpdate();
 
