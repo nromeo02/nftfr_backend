@@ -9,178 +9,150 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class NftDaoPostgres implements NftDao {
     private final Connection connection;
     public NftDaoPostgres(Connection conn){
         this.connection = conn;
     }
-    @Override
-    public Nft findByPrimaryKey(String id){
-        Nft nft = null;
-        String query = "select * from nft where id = ?";
-        try{
-            PreparedStatement st = connection.prepareStatement(query);
-            st.setString(1, id);
-            ResultSet rs = st.executeQuery();
 
-            if (rs.next()){
-                nft = new Nft();
-                nft.setId(rs.getString("id"));
-                nft.setAuthor(rs.getString("author"));
-                nft.setOwner(rs.getString("owner"));
-                nft.setCaption(rs.getString("caption"));
-                nft.setTitle(rs.getString("title"));
-                nft.setValue(rs.getDouble("value"));
+    private List<Nft> execListQuery(PreparedStatement stmt) throws SQLException {
+        ResultSet rs = stmt.executeQuery();
+        ArrayList<Nft> results = new ArrayList<>();
+        while (rs.next())
+            results.add(makeNftFromRS(rs));
+        return results;
+    }
 
-                String tagsString = rs.getString("tags");
-                ArrayList<String> tags = new ArrayList<>();
-                String[] tagArray = tagsString.split(",");
-                for (String tag : tagArray) {
-                    tags.add(tag.trim());
-                }
-                nft.setTag(tags);
+    private ArrayList<String> makeTagsList(String tagsString) {
+        ArrayList<String> tags = new ArrayList<>();
+        for (String tag : tagsString.split(","))
+            tags.add(tag.trim());
+        return tags;
+    }
 
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+    private Nft makeNftFromRS(ResultSet rs) throws SQLException {
+        Nft nft = new Nft();
+        nft.setId(rs.getString("id"));
+        nft.setAuthor(rs.getString("author"));
+        nft.setOwner(rs.getString("owner"));
+        nft.setCaption(rs.getString("caption"));
+        nft.setTitle(rs.getString("title"));
+        nft.setValue(rs.getDouble("value"));
+        nft.setTag(makeTagsList(rs.getString("tags")));
         return nft;
-
     }
 
     @Override
     public void create(Nft nft) {
-        String query = "INSERT INTO nft (id, author, owner, caption, title, value, tags) VALUES (?, ?, ?, ?, ?, ?, ?)";
-
-        try (PreparedStatement st = connection.prepareStatement(query)) {
-
-            st.setString(1, nft.getId());
-            st.setString(2, nft.getAuthor());
-            st.setString(3, nft.getOwner());
-            st.setString(4, nft.getCaption());
-            st.setString(5, nft.getTitle());
-            st.setDouble(6, nft.getValue());
-            st.setString(7, String.join(",", nft.getTag()));
-            st.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        String sql = "INSERT INTO nft (id, author, owner, caption, title, value, tags) VALUES (?, ?, ?, ?, ?, ?, ?);";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, nft.getId());
+            stmt.setString(2, nft.getAuthor());
+            stmt.setString(3, nft.getOwner());
+            stmt.setString(4, nft.getCaption());
+            stmt.setString(5, nft.getTitle());
+            stmt.setDouble(6, nft.getValue());
+            stmt.setString(7, String.join(",", nft.getTag()));
+            stmt.executeUpdate();
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
     @Override
     public void update(Nft nft) {
-        String query = "UPDATE nft SET author=?, owner=?, caption=?, title=?, value=?, tags=? WHERE id=?";
-
-        try (PreparedStatement st = connection.prepareStatement(query)){
-
-            st.setString(1, nft.getAuthor());
-            st.setString(2, nft.getOwner());
-            st.setString(3, nft.getCaption());
-            st.setString(4, nft.getTitle());
-            st.setDouble(5, nft.getValue());
-            st.setString(6, String.join(",", nft.getTag()));
-            st.setString(7, nft.getId());
-
-            st.executeUpdate();
-            }
-            catch(SQLException e){
-                throw new RuntimeException(e);
+        String sql = "UPDATE nft SET author=?, owner=?, caption=?, title=?, value=?, tags=? WHERE id=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)){
+            stmt.setString(1, nft.getAuthor());
+            stmt.setString(2, nft.getOwner());
+            stmt.setString(3, nft.getCaption());
+            stmt.setString(4, nft.getTitle());
+            stmt.setDouble(5, nft.getValue());
+            stmt.setString(6, String.join(",", nft.getTag()));
+            stmt.setString(7, nft.getId());
+            stmt.executeUpdate();
+        }
+        catch(SQLException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
     @Override
     public void delete(String id) {
-        String query = "delete from nft where id = ?";
-        try{
-            PreparedStatement st = connection.prepareStatement(query);
-            st.setString(1,id);
-            st.executeUpdate();
-
+        String sql = "DELETE FROM nft WHERE id=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)){
+            stmt.setString(1,id);
+            stmt.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public List<Nft> findByQuery(List<String> search) {
-        List<Nft> nfts = new ArrayList<>();
-        //String query = "select * from nft where  "
-        return null;
+    public Nft findByPrimaryKey(String id){
+        String sql = "SELECT id, author, owner, caption, title, value, tags FROM nft WHERE id=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, id);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next() ? makeNftFromRS(rs) : null;
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     @Override
-    public List<Nft> findByTag(List<String> tag) {
-        List<Nft> nfts = new ArrayList<>();
-        String query = "select * from nft where tags LIKE ?";
-        try{
-            PreparedStatement st = connection.prepareStatement(query);
-            for (String tags : tag){
-                st.setString(1, "%" + tag + "%");
-                ResultSet rs = st.executeQuery();
-
-                while(rs.next()){
-                    Nft nft = new Nft();
-                    nft.setId(rs.getString("id"));
-                    nft.setAuthor(rs.getString("author"));
-                    nft.setOwner(rs.getString("owner"));
-                    nft.setCaption(rs.getString("caption"));
-                    nft.setTitle(rs.getString("title"));
-                    nft.setValue(rs.getDouble("value"));
-                    ArrayList<String> nftTags = new ArrayList<>();
-                    String tagsString = rs.getString("tag");
-                    String[] tagArray = tagsString.split(",");
-                    for (String t : tagArray) {
-                        nftTags.add(t.trim());
-                    }
-                    nft.setTag(nftTags);
-
-                    nfts.add(nft);
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+    public List<Nft> findByOwner(String username) {
+        String sql = "SELECT id, author, owner, caption, title, value, tags FROM nft WHERE owner=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            return execListQuery(stmt);
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
         }
-        return nfts;
     }
 
     @Override
-    public List<Nft> findByValue(int max, int min) {
+    public List<Nft> findByAuthor(String username) {
+        String sql = "SELECT id, author, owner, caption, title, value, tags FROM nft WHERE author=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            return execListQuery(stmt);
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
-        List<Nft> nftsByValue = new ArrayList<>();
-        String query = "SELECT * FROM nft WHERE value >= ? AND value <= ?";
+    @Override
+    public List<Nft> findByQuery(Set<String> tokens, double minPrice, double maxPrice) {
+        StringBuilder sql = new StringBuilder();
 
-        try (PreparedStatement st = connection.prepareStatement(query)) {
+        // Build sql statement.
+        for (int i = 0; i < tokens.size(); ++i) {
+            if (i != 0)
+                sql.append(" UNION ");
 
-            st.setDouble(1, min);
-            st.setDouble(2, max);
-
-            ResultSet rs = st.executeQuery();
-
-            while (rs.next()) {
-                Nft nft = new Nft();
-                nft.setId(rs.getString("id"));
-                nft.setAuthor(rs.getString("author"));
-                nft.setOwner(rs.getString("owner"));
-                nft.setCaption(rs.getString("caption"));
-                nft.setTitle(rs.getString("title"));
-                nft.setValue(rs.getDouble("value"));
-
-                ArrayList<String> tags = new ArrayList<>();
-                String tagsString = rs.getString("tag");
-                String[] tagArray = tagsString.split(",");
-                for (String tag : tagArray) {
-                    tags.add(tag.trim());
-                }
-                nft.setTag(tags);
-
-                nftsByValue.add(nft);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+            sql.append("(SELECT id, author, owner, caption, title, value, tags FROM nft WHERE " +
+                    "((title LIKE ?) OR (caption LIKE ?) OR (tags LIKE ?)) AND (value BETWEEN ? AND ?))");
         }
 
-        return nftsByValue;
+        try (PreparedStatement stmt = connection.prepareStatement(sql.toString())) {
+            // Fill in parameters.
+            int i = 1;
+            for (String token : tokens) {
+                String tokenString = "%" + token + "%";
+                stmt.setString(i++, tokenString);
+                stmt.setString(i++, tokenString);
+                stmt.setString(i++, tokenString);
+                stmt.setDouble(i++, minPrice);
+                stmt.setDouble(i++, maxPrice);
+            }
+
+            return execListQuery(stmt);
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }
 

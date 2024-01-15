@@ -11,18 +11,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
-//caricamento dell'immagine, le find, prende l'id e ritorna l'immagine
 @RestController
 @RequestMapping("/nft")
 public class NftRest {
     private final  NftDao nftDao = DBManager.getInstance().getNftDao();
 
-    public record CreateParams(String caption, String title, double value, ArrayList<String> tag, String data){
+    public record CreateParams(String caption, String title, Double value, ArrayList<String> tag, String data){
         private static String bytesToHexString(byte[] bytes) {
             final char[] hexArray = "0123456789ABCDEF".toCharArray();
             char[] hexChars = new char[bytes.length * 2];
@@ -57,7 +53,9 @@ public class NftRest {
         }
     }
 
-    public record UpdateParams(String title, String caption, double value, ArrayList<String> tag) {}
+    public record UpdateParams(String title, String caption, Double value, ArrayList<String> tag) {}
+
+    public record FindParams(String owner, String author, String query, Double minPrice, Double maxPrice) {}
 
     @PutMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
@@ -88,7 +86,7 @@ public class NftRest {
         nftDao.update(nft);
     }
 
-    @DeleteMapping(value = "delete/{id}")
+    @DeleteMapping(value = "/delete/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable String id, HttpServletRequest req) {
         AuthToken authToken = AuthToken.fromRequest(req);
@@ -102,6 +100,28 @@ public class NftRest {
 
         nftDao.delete(id);
         // TODO: delete image.
+    }
+
+    @PostMapping(value = "/find")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Nft> find(@RequestBody FindParams params) {
+        // Filter by owner.
+        if (params.owner() != null)
+            return nftDao.findByOwner(params.owner());
+
+        // Filter by author.
+        if (params.author() != null)
+            return nftDao.findByAuthor(params.author());
+
+        // Filter by other parameters.
+        double minPrice = params.minPrice() != null ? params.minPrice() : 0.0;
+        double maxPrice = params.maxPrice() != null ? params.maxPrice() : Double.MAX_VALUE;
+
+        HashSet<String> queryTokens = new HashSet<>();
+        if (params.query() != null)
+            queryTokens.addAll(Arrays.asList(params.query().split(" ")));
+
+        return nftDao.findByQuery(queryTokens, minPrice, maxPrice);
     }
 }
 
