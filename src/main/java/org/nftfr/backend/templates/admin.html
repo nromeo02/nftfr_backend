@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Page</title>
+</head>
+<body style="background-color: #323232;">
+
+<h1>Welcome to the Admin Page</h1>
+
+<div th:if="${admin}" align="center">
+    <!-- Contenuto visibile solo agli amministratori -->
+    <p>You have admin privileges. Here are some admin options:</p>
+    <ul align="center">
+        <li><a href="/admin/users">Manage Users</a></li>
+        <li><a href="/admin/nfts">Manage NFTs</a></li>
+        <li><a href="/admin/sales">Manage Sales</a></li>
+    </ul>
+</div>
+
+<div th:unless="${admin}">
+    <!-- Messaggio per chi non è un amministratore -->
+    <p>You do not have admin privileges. Contact an administrator for assistance.</p>
+</div>
+
+</body>
+</html>
