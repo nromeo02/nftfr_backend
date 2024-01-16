@@ -96,7 +96,7 @@ public class UserRest {
     public User get(@PathVariable String username){
         User userdao = userDao.findByUsername(username);
         if(userdao == null){
-            throw new ClientErrorException(HttpStatus.NO_CONTENT, "User not found");
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "User not found");
         }
         userdao.setEncryptedPw("");
         return userdao;

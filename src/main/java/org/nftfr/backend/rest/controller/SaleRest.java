@@ -75,7 +75,7 @@ public class SaleRest {
     public void buy(@PathVariable int id, HttpServletRequest request, @RequestBody Map<String, String> requestBody) {
         AuthToken authToken = AuthToken.fromRequest(request);
         if (authToken == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
+            throw new ClientErrorException(HttpStatus.UNAUTHORIZED, "Invalid token");
         } else {
             Sale sale = saleDao.findById(id);
 
@@ -114,8 +114,6 @@ public class SaleRest {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    System.out.println("Exception details: " + e.getMessage());
-                    throw new ClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error");
                 }
             } else {
                 throw new ClientErrorException(HttpStatus.FORBIDDEN, "Buyer already owns the NFT");

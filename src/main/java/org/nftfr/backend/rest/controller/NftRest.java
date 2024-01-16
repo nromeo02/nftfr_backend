@@ -129,7 +129,7 @@ public class NftRest {
     public Nft get(@PathVariable String id){
         Nft nftdao = nftDao.findByPrimaryKey(id);
         if(nftdao == null){
-            throw new ClientErrorException(HttpStatus.NO_CONTENT, "Nft not found");
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "Nft not found");
         }
         return nftdao;
     }
