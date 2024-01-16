@@ -127,21 +127,11 @@ public class NftRest {
     @GetMapping("/get/{id}")
     @ResponseStatus(HttpStatus.OK)
     public Nft get(@PathVariable String id){
-        Nft nft = new Nft();
         Nft nftdao = nftDao.findByPrimaryKey(id);
         if(nftdao == null){
             throw new ClientErrorException(HttpStatus.NO_CONTENT, "Nft not found");
         }
-        else{
-            nft.setId(id);
-            nft.setAuthor(nftdao.getAuthor());
-            nft.setOwner(nftdao.getOwner());
-            nft.setTag(nftdao.getTag());
-            nft.setTitle(nftdao.getTitle());
-            nft.setValue(nftdao.getValue());
-            nft.setCaption(nftdao.getCaption());
-        }
-        return nft;
+        return nftdao;
     }
 
 }
