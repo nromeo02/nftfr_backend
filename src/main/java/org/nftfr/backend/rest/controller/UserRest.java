@@ -91,4 +91,22 @@ public class UserRest {
 
        delete(username);
     }
+    @GetMapping("/get/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public User get(@PathVariable String username){
+        User user = new User();
+        User userdao = userDao.findByUsername(username);
+        if(userdao == null){
+            throw new ClientErrorException(HttpStatus.NO_CONTENT, "User not found");
+        }
+        else{
+            user.setName(userdao.getName());
+            user.setSurname(userdao.getSurname());
+            user.setUsername(userdao.getUsername());
+            user.setRank(userdao.getRank());
+            user.setAdmin(userdao.isAdmin());
+        }
+        return user;
+    }
+
 }

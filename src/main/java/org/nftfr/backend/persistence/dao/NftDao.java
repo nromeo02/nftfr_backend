@@ -13,4 +13,5 @@ public interface NftDao {
     List<Nft> findByOwner(String username);
     List<Nft> findByAuthor(String username);
     List<Nft> findByQuery(Set<String> tokens, double minPrice, double maxPrice);
+
 }

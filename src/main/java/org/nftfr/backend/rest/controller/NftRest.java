@@ -14,6 +14,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 @RestController
+@CrossOrigin(value = "http://localhost:4200", allowCredentials = "true")
 @RequestMapping("/nft")
 public class NftRest {
     private final  NftDao nftDao = DBManager.getInstance().getNftDao();
@@ -33,7 +34,7 @@ public class NftRest {
         private String getNftId() {
             try {
                 MessageDigest digest = MessageDigest.getInstance("SHA-256");
-                byte[] hash = digest.digest(Base64.getUrlDecoder().decode(data));
+                byte[] hash = digest.digest(Base64.getDecoder().decode(data));
                 return bytesToHexString(hash);
             } catch (NoSuchAlgorithmException ex) {
                 throw new RuntimeException(ex);
@@ -123,6 +124,26 @@ public class NftRest {
 
         return nftDao.findByQuery(queryTokens, minPrice, maxPrice);
     }
+    @GetMapping("/get/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public Nft get(@PathVariable String id){
+        Nft nft = new Nft();
+        Nft nftdao = nftDao.findByPrimaryKey(id);
+        if(nftdao == null){
+            throw new ClientErrorException(HttpStatus.NO_CONTENT, "Nft not found");
+        }
+        else{
+            nft.setId(id);
+            nft.setAuthor(nftdao.getAuthor());
+            nft.setOwner(nftdao.getOwner());
+            nft.setTag(nftdao.getTag());
+            nft.setTitle(nftdao.getTitle());
+            nft.setValue(nftdao.getValue());
+            nft.setCaption(nftdao.getCaption());
+        }
+        return nft;
+    }
+
 }
 
 

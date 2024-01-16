@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
+@CrossOrigin(value = "http://localhost:4200", allowCredentials = "true")
 @RequestMapping("/payment")
 public class PaymentMethodRest {
     private final PaymentMethodDao paymentMethodDao = DBManager.getInstance().getPaymentMethodDao();

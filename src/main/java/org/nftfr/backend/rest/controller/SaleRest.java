@@ -19,9 +19,8 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Map;
-
-//create delete (per amministratori) buy (se c'è endtime)
 @RestController
+@CrossOrigin(value = "http://localhost:4200", allowCredentials = "true")
 @RequestMapping("/sale")
 public class SaleRest {
     private final SaleDao saleDao = DBManager.getInstance().getSaleDao();
