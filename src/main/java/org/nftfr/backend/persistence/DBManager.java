@@ -1,5 +1,6 @@
 package org.nftfr.backend.persistence;
 
+import org.nftfr.backend.ConfigManager;
 import org.nftfr.backend.persistence.dao.NftDao;
 import org.nftfr.backend.persistence.dao.SaleDao;
 import org.nftfr.backend.persistence.dao.UserDao;
@@ -14,11 +15,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBManager {
-    private static final String POSTGRES_PORT = "5432";
-    private static final String DB_NAME = "nftfr";
-    private static final String USERNAME = "postgres";
-    private static final String PASSWORD = "angelogay";
-
     private static DBManager instance = null;
     private Connection connection = null;
 
@@ -31,14 +27,12 @@ public class DBManager {
         return instance;
     }
 
-    private String getDBURL() {
-        return "jdbc:postgresql://localhost:" + POSTGRES_PORT + "/" + DB_NAME;
-    }
-
     public Connection getConnection() {
         if (connection == null) {
+            ConfigManager config = ConfigManager.getInstance();
+            final String url = "jdbc:postgresql://localhost:" + config.getDBPort() + "/" + config.getDBName();
             try {
-                connection = DriverManager.getConnection(getDBURL(), USERNAME, PASSWORD);
+                connection = DriverManager.getConnection(url, config.getDBUsername(), config.getDBPassword());
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }

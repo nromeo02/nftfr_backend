@@ -6,6 +6,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
+import org.nftfr.backend.ConfigManager;
 import org.nftfr.backend.persistence.model.User;
 import org.springframework.http.HttpStatus;
 
@@ -18,7 +19,7 @@ public record AuthToken(@JsonIgnore String username, @JsonIgnore boolean admin, 
     private static final SecretKey SECRET = decodeSecret();
 
     private static SecretKey decodeSecret() {
-        return Keys.hmacShaKeyFor(Base64.getDecoder().decode("odAh38us0qj7coVBSfrvAEyKxJ2ecgqa8oPAPwvZi/c="));
+        return Keys.hmacShaKeyFor(Base64.getDecoder().decode(ConfigManager.getInstance().getJwtSecret()));
     }
 
     public static AuthToken generate(User user) {
