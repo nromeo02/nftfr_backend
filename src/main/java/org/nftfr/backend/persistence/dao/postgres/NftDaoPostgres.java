@@ -25,6 +25,13 @@ public class NftDaoPostgres implements NftDao {
         return results;
     }
 
+    private String makeTagsString(ArrayList<String> tags) {
+        ArrayList<String> lowered = new ArrayList<>();
+        for (String tag : tags)
+            lowered.add(tag.toLowerCase());
+        return String.join(",", lowered);
+    }
+
     private ArrayList<String> makeTagsList(String tagsString) {
         ArrayList<String> tags = new ArrayList<>();
         for (String tag : tagsString.split(","))
@@ -54,7 +61,7 @@ public class NftDaoPostgres implements NftDao {
             stmt.setString(4, nft.getCaption());
             stmt.setString(5, nft.getTitle());
             stmt.setDouble(6, nft.getValue());
-            stmt.setString(7, String.join(",", nft.getTag()));
+            stmt.setString(7, makeTagsString(nft.getTag()));
             stmt.executeUpdate();
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
@@ -70,7 +77,7 @@ public class NftDaoPostgres implements NftDao {
             stmt.setString(3, nft.getCaption());
             stmt.setString(4, nft.getTitle());
             stmt.setDouble(5, nft.getValue());
-            stmt.setString(6, String.join(",", nft.getTag()));
+            stmt.setString(6, makeTagsString(nft.getTag()));
             stmt.setString(7, nft.getId());
             stmt.executeUpdate();
         }
