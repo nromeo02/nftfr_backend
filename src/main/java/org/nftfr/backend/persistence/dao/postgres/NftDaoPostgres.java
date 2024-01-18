@@ -119,18 +119,6 @@ public class NftDaoPostgres implements NftDao {
             throw new RuntimeException(ex);
         }
     }
-
-    @Override
-    public List<Nft> findByAuthor(String username) {
-        String sql = "SELECT id, author, owner, caption, title, value, tags FROM nft WHERE author=?;";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, username);
-            return execListQuery(stmt);
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
     @Override
     public List<Nft> findByQuery(Set<String> tokens, double minPrice, double maxPrice) {
         StringBuilder sql = new StringBuilder();
@@ -159,6 +147,26 @@ public class NftDaoPostgres implements NftDao {
             return execListQuery(stmt);
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
+        }
+    }
+    @Override
+    public List<Nft> findByAuthor(String username) {
+        String sql = "SELECT id, author, owner, caption, title, value, tags FROM nft WHERE author=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            return execListQuery(stmt);
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+    @Override
+    public void report(String id) {
+        String updateQuery = "UPDATE reported SET counter = counter + 1 WHERE nft_id = ?";
+        try (PreparedStatement updateStmt = connection.prepareStatement(updateQuery)) {
+            updateStmt.setString(1, id);
+            updateStmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }

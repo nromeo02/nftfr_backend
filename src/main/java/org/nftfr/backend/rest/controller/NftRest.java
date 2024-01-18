@@ -10,6 +10,7 @@ import org.nftfr.backend.rest.model.ClientErrorException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -180,4 +181,17 @@ public class NftRest {
         }
     }
     //to do report
+    @PutMapping("/report/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void report(@PathVariable String id, HttpServletRequest request) {
+        AuthToken authToken = AuthToken.fromRequest(request);
+        if (authToken == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
+        }
+        Nft nft = nftDao.findByPrimaryKey(id);
+        if (nft == null) {
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "The nft does not exist");
+        }
+            nftDao.report(id);
+    }
 }

@@ -37,15 +37,18 @@ body {
 #reportTable thead{
     font-size: 50px;
 }
+/*
 table {
     height: 100px;
     margin: auto;
     margin-top: 20px;
-    border-collapse: collapse;           /*da provare anche senza */
+    border-collapse: collapse;           da provare anche senza
 }
 table, th, td {
     border: 1px solid white;
 }
+*/
+
 form {
     display: inline-block;
     text-align: left;
