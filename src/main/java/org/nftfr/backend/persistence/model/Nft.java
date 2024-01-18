@@ -1,25 +1,16 @@
 package org.nftfr.backend.persistence.model;
 import java.util.ArrayList;
-import java.util.List;
 
 public class Nft {
     private String id;
-    private String author;
-    private String owner;
+    private User author;
+    private User owner;
     private String caption;
     private String title;
     private double value;
-    private ArrayList<String> tag;
-    public Nft(){}
-    public Nft(String id, String author, String owner, String caption, String title, double value, ArrayList<String> tag) {
-        this.id = id;
-        this.author = author;
-        this.owner = owner;
-        this.caption = caption;
-        this.title = title;
-        this.value = value;
-        this.tag = tag;
-    }
+    private ArrayList<String> tags;
+
+    public Nft() {}
 
     public String getId() {
         return id;
@@ -29,19 +20,19 @@ public class Nft {
         this.id = id;
     }
 
-    public String getAuthor() {
+    public User getAuthor() {
         return author;
     }
 
-    public void setAuthor(String author) {
+    public void setAuthor(User author) {
         this.author = author;
     }
 
-    public String getOwner() {
+    public User getOwner() {
         return owner;
     }
 
-    public void setOwner(String owner) {
+    public void setOwner(User owner) {
         this.owner = owner;
     }
 
@@ -69,14 +60,11 @@ public class Nft {
         this.value = value;
     }
 
-    public ArrayList<String> getTag() {
-        return tag;
+    public ArrayList<String> getTags() {
+        return tags;
     }
 
-    public void setTag(ArrayList<String> tag) {
-        this.tag = tag;
-    }
-    public void addTag(String tag){
-        this.tag.add(tag);
+    public void setTags(ArrayList<String> tag) {
+        this.tags = tag;
     }
 }

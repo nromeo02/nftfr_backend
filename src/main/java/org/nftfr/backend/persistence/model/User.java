@@ -1,23 +1,24 @@
 package org.nftfr.backend.persistence.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public class User {
     private String username;
     private String name;
     private String surname;
+    @JsonIgnore
     private String encryptedPw;
     private int rank = 0;
     private boolean admin = false;
     public User() {}
 
-
     public String getUsername(){
         return username;
     }
 
-    public void setUsername(String s){
-        this.username = s;
+    public void setUsername(String username){
+        this.username = username;
     }
 
     public String getName() {
