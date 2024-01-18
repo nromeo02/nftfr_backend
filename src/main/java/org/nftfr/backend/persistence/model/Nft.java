@@ -60,11 +60,19 @@ public class Nft {
         this.value = value;
     }
 
-    public ArrayList<String> getTags() {
-        return tags;
+    public void setTags(ArrayList<String> inputTags) {
+        tags = new ArrayList<>();
+        for (String tag : inputTags)
+            tags.add(tag.toLowerCase());
     }
 
-    public void setTags(ArrayList<String> tag) {
-        this.tags = tag;
+    public String getTagsAsString() {
+        return String.join(",", tags);
+    }
+
+    public void setTagsFromString(String tagsString) {
+        tags = new ArrayList<>();
+        for (String tag : tagsString.split(","))
+            tags.add(tag.trim().toLowerCase());
     }
 }

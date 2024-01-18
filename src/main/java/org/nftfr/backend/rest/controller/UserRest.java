@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserRest {
     private final UserDao userDao = DBManager.getInstance().getUserDao();
 
-    public record RegisterParams(String username, String name, String surname, String password) {
+    public record RegisterBody(String username, String name, String surname, String password) {
         public User asUser() {
             User user = new User();
             user.setUsername(username);
@@ -27,13 +27,13 @@ public class UserRest {
         }
     }
 
-    public record UpdateParams(String name, String surname, String password) {}
+    public record UpdateBody(String name, String surname, String password) {}
 
     @PutMapping(value = "/register")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void register(@RequestBody RegisterParams params) {
-        if (!userDao.register(params.asUser()))
-            throw new ClientErrorException(HttpStatus.CONFLICT, "Username is already taken");
+    @ResponseStatus(HttpStatus.CREATED)
+    public void register(@RequestBody RegisterBody bodyParams) {
+        if (!userDao.register(bodyParams.asUser()))
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "Username is already taken");
     }
 
     @GetMapping(value = "/login")
@@ -58,22 +58,22 @@ public class UserRest {
 
     @PutMapping(value = "/update")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void update(@RequestBody UpdateParams params, HttpServletRequest req) {
+    public void update(@RequestBody UpdateBody bodyParams, HttpServletRequest req) {
         AuthToken authToken = AuthToken.fromRequest(req);
         User user = userDao.findByUsername(authToken.username());
         if (user == null)
-            throw new ClientErrorException(HttpStatus.NOT_FOUND, "The user does not exist");
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "User not found");
 
-        user.setName(params.name());
-        user.setSurname(params.surname());
-        user.setEncryptedPw(User.encryptPassword(params.password()));
+        user.setName(bodyParams.name());
+        user.setSurname(bodyParams.surname());
+        user.setEncryptedPw(User.encryptPassword(bodyParams.password()));
         userDao.update(user);
     }
 
     private void delete(String username) {
         User user = userDao.findByUsername(username);
         if (user == null)
-            throw new ClientErrorException(HttpStatus.NOT_FOUND, "The user does not exist");
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "User not found");
 
         userDao.delete(username);
     }
@@ -91,12 +91,13 @@ public class UserRest {
 
        delete(username);
     }
+
     @GetMapping("/get/{username}")
     @ResponseStatus(HttpStatus.OK)
     public User get(@PathVariable String username) {
         User user = userDao.findByUsername(username);
         if(user == null)
-            throw new ClientErrorException(HttpStatus.NOT_FOUND, "The user does not exist");
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "User not found");
 
         return user;
     }

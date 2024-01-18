@@ -22,8 +22,8 @@ public class UserDaoPostgres implements UserDao {
             return false;
 
         // Insert this user into the database.
-        final String query = "INSERT INTO users (username, name, surname, encrypted_pw) VALUES (?, ?, ?, ?);";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        final String sql = "INSERT INTO users (username, name, surname, encrypted_pw) VALUES (?, ?, ?, ?);";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, user.getUsername());
             stmt.setString(2, user.getName());
             stmt.setString(3, user.getSurname());
@@ -37,8 +37,8 @@ public class UserDaoPostgres implements UserDao {
 
     @Override
     public void update(User user) {
-        final String query = "UPDATE users SET name=?, surname=?, encrypted_pw=?, rank=? WHERE username=?;";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        final String sql = "UPDATE users SET name=?, surname=?, encrypted_pw=?, rank=? WHERE username=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, user.getName());
             stmt.setString(2, user.getSurname());
             stmt.setString(3, user.getEncryptedPw());
@@ -52,8 +52,8 @@ public class UserDaoPostgres implements UserDao {
 
     @Override
     public void delete(String username) {
-        final String query = "DELETE FROM users WHERE username=?;";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        final String sql = "DELETE FROM users WHERE username=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, username);
             stmt.executeUpdate();
         } catch (SQLException ex) {
@@ -63,8 +63,8 @@ public class UserDaoPostgres implements UserDao {
 
     @Override
     public User findByUsername(String username) {
-        String query = "SELECT name, surname, encrypted_pw, rank, admin FROM users WHERE username=?;";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        final String sql = "SELECT name, surname, encrypted_pw, rank, admin FROM users WHERE username=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, username);
             ResultSet rs = stmt.executeQuery();
 
@@ -79,8 +79,8 @@ public class UserDaoPostgres implements UserDao {
             user.setRank(rs.getInt("rank"));
             user.setAdmin(rs.getBoolean("admin"));
             return user;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
         }
     }
 }

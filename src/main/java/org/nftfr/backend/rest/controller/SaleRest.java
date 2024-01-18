@@ -5,6 +5,7 @@ import org.nftfr.backend.persistence.DBManager;
 import org.nftfr.backend.persistence.dao.NftDao;
 import org.nftfr.backend.persistence.dao.PaymentMethodDao;
 import org.nftfr.backend.persistence.dao.SaleDao;
+import org.nftfr.backend.persistence.dao.UserDao;
 import org.nftfr.backend.persistence.model.PaymentMethod;
 import org.nftfr.backend.persistence.model.Sale;
 import org.nftfr.backend.persistence.model.Nft;
@@ -12,104 +13,114 @@ import org.nftfr.backend.persistence.model.User;
 import org.nftfr.backend.rest.model.AuthToken;
 import org.nftfr.backend.rest.model.ClientErrorException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Map;
+
 @RestController
 @CrossOrigin(value = "http://localhost:4200", allowCredentials = "true")
 @RequestMapping("/sale")
 public class SaleRest {
     private final SaleDao saleDao = DBManager.getInstance().getSaleDao();
+    private final UserDao userDao = DBManager.getInstance().getUserDao();
     private final NftDao nftDao = DBManager.getInstance().getNftDao();
     private final PaymentMethodDao paymentMethodDao = DBManager.getInstance().getPaymentMethodDao();
 
-    private record CreateParams(String idNft, double price, LocalDateTime creationDate, Duration duration) {
-        public Sale asSale() {
+    public record CreateBody(String idNft, double price, LocalDateTime creationDate, Duration duration) {
+        public Sale asSale(Nft nft) {
             Sale sale = new Sale();
-            sale.setId(1);
-            sale.setIdNft(idNft);
+            sale.setNft(nft);
             sale.setPrice(price);
             sale.setCreationDate(creationDate);
-            if (duration.isZero()) {
-                return sale;
-            }
-            sale.setEndTime(creationDate.plus(duration));
+
+            if (!duration.isZero())
+                sale.setEndTime(creationDate.plus(duration));
+
             return sale;
         }
     }
 
-    //funziona ma bisogna settare l'id con id broker e bisogna passare la giusta string idnft
     @PutMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
-    public void createSale(@RequestBody CreateParams createParams, HttpServletRequest request) {
-        saleDao.add(createParams.asSale());
+    public void createSale(@RequestBody CreateBody bodyParams, HttpServletRequest req) {
+        AuthToken authToken = AuthToken.fromRequest(req);
+        Nft nft = nftDao.findById(bodyParams.idNft());
+
+        if (nft == null)
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "NFT not found");
+
+        if (!nft.getOwner().getUsername().equals(authToken.username()))
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "You don't have the permissions for this action");
+
+        saleDao.add(bodyParams.asSale(nft));
     }
 
-    //funziona
     @DeleteMapping("/delete/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteSale(@PathVariable int id, HttpServletRequest request) {
-        AuthToken authToken = AuthToken.fromRequest(request);
-        if (!authToken.admin()) {
-            throw new RuntimeException("Non sei amministratore");
-        } else {
-            Sale sale = saleDao.findById(id);
-            if (sale == null) {
-                throw new ClientErrorException(HttpStatus.NOT_FOUND, "Nft not found");
-            } else {
-                saleDao.remove(id);
-            }
-        }
+    public void deleteSale(@PathVariable Long id, HttpServletRequest req) {
+        AuthToken authToken = AuthToken.fromRequest(req);
+        Sale sale = saleDao.findById(id);
+        if (sale == null)
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "Sale not found");
+
+        // Block the user from deleting other users NFTs.
+        if (!sale.getNft().getOwner().getUsername().equals(authToken.username()))
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "You don't have the permissions for this action");
+
+        saleDao.remove(id);
     }
 
     @PutMapping("/buy/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void buy(@PathVariable int id, HttpServletRequest request, @RequestBody Map<String, String> requestBody) {
-        AuthToken authToken = AuthToken.fromRequest(request);
-            Sale sale = saleDao.findById(id);
-            if (sale == null) {
-                throw new ClientErrorException(HttpStatus.NOT_FOUND, "The sale doesn't exist");
-            }
-            Nft nft = nftDao.findByPrimaryKey(sale.getIdNft());
-            if (nft == null) {
-                throw new ClientErrorException(HttpStatus.NOT_FOUND, "Nft not found");
-            }
-            User buyer = DBManager.getInstance().getUserDao().findByUsername(authToken.username());
-            if (buyer == null) {
-                throw new ClientErrorException(HttpStatus.NOT_FOUND, "Buyer not found");
-            }
-            String address = requestBody.get("address");
-            if (address == null || address.isEmpty()) {
-                throw new ClientErrorException(HttpStatus.NOT_FOUND, "Address not found or empty");
-            }
-            PaymentMethod paymentMethod = paymentMethodDao.findByAddress(address);
-            if (!nft.getOwner().getUsername().equals(authToken.username())) {
-                try {
-                    if (paymentMethod != null) {
-                        if (paymentMethod.getBalance() >= sale.getPrice()) {
-                            paymentMethod.setBalance(paymentMethod.getBalance() - sale.getPrice());
-                            paymentMethodDao.update(paymentMethod);
-                            nft.setOwner(buyer);
-                            nftDao.update(nft);
-                            buyer.setRank(buyer.getRank() + 1);
-                            DBManager.getInstance().getUserDao().update(buyer);
-                            saleDao.remove(id);
-                        } else {
-                            throw new ClientErrorException(HttpStatus.PAYMENT_REQUIRED, "Insufficient balance");
-                        }
-                    } else {
-                        throw new ClientErrorException(HttpStatus.NOT_FOUND, "Payment method not found");
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } else {
-                throw new ClientErrorException(HttpStatus.FORBIDDEN, "Buyer already owns the NFT");
-            }
+    public void buy(@PathVariable Long id, @RequestBody Map<String, String> bodyParams, HttpServletRequest req) {
+        AuthToken authToken = AuthToken.fromRequest(req);
+
+        // Find sale.
+        Sale sale = saleDao.findById(id);
+        if (sale == null)
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "Sale not found");
+
+        Nft nft = sale.getNft();
+
+        // Find user.
+        User buyer = userDao.findByUsername(authToken.username());
+        if (buyer == null)
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "User not found");
+
+        // Check if a user is trying to buy their own nft.
+        if (nft.getOwner().getUsername().equals(buyer.getUsername()))
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "You already own this nft");
+
+        // Find and verify the payment method.
+        PaymentMethod paymentMethod = paymentMethodDao.findByAddress(bodyParams.get("address"));
+        if (paymentMethod == null)
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "Payment method not found");
+
+        if (!paymentMethod.getUser().getUsername().equals(buyer.getUsername()))
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "Invalid payment method");
+
+        if (paymentMethod.getBalance() < sale.getPrice())
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "Insufficient balance");
+
+        // Transfer money.
+        paymentMethod.setBalance(paymentMethod.getBalance() - sale.getPrice());
+        sale.getPaymentMethod().setBalance(sale.getPaymentMethod().getBalance() + sale.getPrice());
+
+        // Transfer ownership.
+        nft.setOwner(buyer);
+
+        // Increase buyer rank.
+        buyer.setRank(buyer.getRank() + 1);
+
+        // Apply database changes.
+        DBManager.getInstance().beginTransaction();
+        paymentMethodDao.update(paymentMethod);
+        paymentMethodDao.update(sale.getPaymentMethod());
+        nftDao.update(nft);
+        saleDao.remove(id);
+        DBManager.getInstance().endTransaction();
     }
 }
 

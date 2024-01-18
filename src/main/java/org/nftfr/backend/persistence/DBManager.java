@@ -35,6 +35,23 @@ public class DBManager {
         return connection;
     }
 
+    public void beginTransaction() {
+        try {
+            connection.setAutoCommit(false);
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public void endTransaction() {
+        try {
+            connection.commit();
+            connection.setAutoCommit(true);
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
     public NftDao getNftDao() { return new NftDaoPostgres(getConnection()); }
     public PaymentMethodDao getPaymentMethodDao() { return new PaymentMethodDaoPostgres(getConnection());}
     public UserDao getUserDao() { return new UserDaoPostgres(getConnection()); }

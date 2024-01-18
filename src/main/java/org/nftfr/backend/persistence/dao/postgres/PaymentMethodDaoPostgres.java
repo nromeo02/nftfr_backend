@@ -2,7 +2,6 @@ package org.nftfr.backend.persistence.dao.postgres;
 
 import org.nftfr.backend.persistence.dao.PaymentMethodDao;
 import org.nftfr.backend.persistence.model.PaymentMethod;
-import org.nftfr.backend.persistence.model.User;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,108 +18,86 @@ public class PaymentMethodDaoPostgres implements PaymentMethodDao {
     }
 
     @Override
-    public void add(PaymentMethod paymentMethod) {
-        String query = "INSERT INTO payment_methods (address, username, type, balance) VALUES (?, ?, ?, ?)";
+    public boolean add(PaymentMethod paymentMethod) {
+        // Make sure the payment method is not used yet.
+        if (findByAddress(paymentMethod.getAddress()) != null)
+            return false;
 
-        try (PreparedStatement st = connection.prepareStatement(query)) {
+        final String sql = "INSERT INTO payment_methods (address, username, type, balance) VALUES (?, ?, ?, ?);";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, paymentMethod.getAddress());
+            stmt.setString(2, paymentMethod.getUser().getUsername());
+            stmt.setInt(3, paymentMethod.getType());
+            stmt.setDouble(4, paymentMethod.getBalance());
+            stmt.executeUpdate();
+            return true;
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
-            st.setString(1, paymentMethod.getAddress());
-            st.setString(2, paymentMethod.getUsername());
-            st.setInt(3, paymentMethod.getType());
-            st.setDouble(4, paymentMethod.getBalance());
-
-            st.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+    @Override
+    public void update(PaymentMethod paymentMethod) {
+        final String sql = "UPDATE payment_methods SET balance=? WHERE address=?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setDouble(1, paymentMethod.getBalance());
+            stmt.setString(2, paymentMethod.getAddress());
+            stmt.executeUpdate();
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
     @Override
     public void delete(String address) {
-        String query = "DELETE FROM payment_methods WHERE address = ?";
+        final String sql = "DELETE FROM payment_methods WHERE address=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, address);
+            stmt.executeUpdate();
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
-        try (PreparedStatement st = connection.prepareStatement(query)) {
+    @Override
+    public PaymentMethod findByAddress(String address) {
+        final String sql = "SELECT * FROM payment_methods WHERE address=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, address);
+            ResultSet rs = stmt.executeQuery();
 
-            st.setString(1, address);
-            st.executeUpdate();
+            if (!rs.next())
+                return null;
 
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            PaymentMethod paymentMethod = new PaymentMethodProxy(connection);
+            paymentMethod.setAddress(rs.getString("address"));
+            paymentMethod.setType(rs.getInt("type"));
+            paymentMethod.setBalance(rs.getDouble("balance"));
+            return paymentMethod;
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
     @Override
     public List<PaymentMethod> findByUsername(String username) {
-        List<PaymentMethod> paymentMethods = new ArrayList<>();
-        String query = "SELECT * FROM payment_methods WHERE username = ?";
+        final String sql = "SELECT * FROM payment_methods WHERE username=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
 
-        try (PreparedStatement st = connection.prepareStatement(query)) {
-
-            st.setString(2, username);
-            ResultSet rs = st.executeQuery();
-
+            List<PaymentMethod> paymentMethods = new ArrayList<>();
             while (rs.next()) {
-                String address = rs.getString("address");
-                int type = rs.getInt("type");
-                double balance = rs.getDouble("balance");
-
-                PaymentMethod paymentMethod = new PaymentMethod(address, username, type, balance);
+                PaymentMethod paymentMethod = new PaymentMethodProxy(connection);
+                paymentMethod.setAddress(rs.getString("address"));
+                paymentMethod.setType(rs.getInt("type"));
+                paymentMethod.setBalance(rs.getDouble("balance"));
                 paymentMethods.add(paymentMethod);
             }
 
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        return paymentMethods;
-    }
-
-    @Override
-    public PaymentMethod findByAddress(String address) {
-        String query = "SELECT * FROM payment_methods WHERE address = ?";
-        PaymentMethod paymentMethod = new PaymentMethod();
-        try (PreparedStatement st = connection.prepareStatement(query)) {
-
-            st.setString(1, address);
-            ResultSet rs = st.executeQuery();
-
-            if (rs.next()) {
-                String username = rs.getString("username");
-                int type = rs.getInt("type");
-                double balance = rs.getDouble("balance");
-
-                paymentMethod.setAddress(address);
-                paymentMethod.setUsername(username);
-                paymentMethod.setType(type);
-                paymentMethod.setBalance(balance);
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        return paymentMethod;
-    }
-
-    @Override
-    public void update(PaymentMethod paymentMethod) {
-        String query = "UPDATE payment_methods SET balance = ? WHERE address = ? AND username = ?";
-
-        try (PreparedStatement st = connection.prepareStatement(query)) {
-
-            st.setDouble(1, paymentMethod.getBalance());
-            st.setString(2, paymentMethod.getAddress());
-            st.setString(3, paymentMethod.getUsername());
-
-            int rowsUpdated = st.executeUpdate();
-
-            if (rowsUpdated == 0) {
-                throw new RuntimeException("Nessun record trovato per l'aggiornamento");
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            return paymentMethods;
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
         }
     }
 }

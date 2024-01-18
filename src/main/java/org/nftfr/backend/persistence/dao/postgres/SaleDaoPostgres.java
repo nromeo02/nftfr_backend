@@ -1,16 +1,14 @@
 package org.nftfr.backend.persistence.dao.postgres;
 
+import org.nftfr.backend.persistence.SaleIdBroker;
 import org.nftfr.backend.persistence.dao.SaleDao;
 import org.nftfr.backend.persistence.model.Sale;
-import org.nftfr.backend.persistence.model.User;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 public class SaleDaoPostgres implements SaleDao {
     private final Connection connection;
@@ -21,121 +19,49 @@ public class SaleDaoPostgres implements SaleDao {
 
     @Override
     public void add(Sale sale) {
-        String query = "INSERT INTO sale (id, nft_id, price, creation_date, end_time) VALUES (?, ?, ?, ?, ?)";
-
-        try (PreparedStatement st = connection.prepareStatement(query)) {
-
-            st.setInt(1, sale.getId());
-            st.setString(2, sale.getIdNft());
-            st.setDouble(3, sale.getPrice());
-            st.setObject(4, sale.getCreationDate());
-            st.setObject(5, sale.getEndTime());
-
-            st.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        final String sql = "INSERT INTO sale (id, nft_id, destination_address, price, creation_date, end_time) VALUES (?, ?, ?, ?, ?, ?);";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setLong(1, SaleIdBroker.getId(connection));
+            stmt.setString(2, sale.getNft().getId());
+            stmt.setString(3, sale.getPaymentMethod().getAddress());
+            stmt.setDouble(4, sale.getPrice());
+            stmt.setObject(5, sale.getCreationDate());
+            stmt.setObject(6, sale.getEndTime());
+            stmt.executeUpdate();
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
     @Override
-    public void remove(int id) {
-        String query = "DELETE FROM sale WHERE id = ?";
-
-        try (PreparedStatement st = connection.prepareStatement(query)) {
-
-            st.setInt(1, id);
-            int rowsDeleted = st.executeUpdate();
-
-            if (rowsDeleted == 0) {
-                throw new RuntimeException("Nessun record trovato per la rimozione");
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+    public void remove(Long id) {
+        final String sql = "DELETE FROM sale WHERE id=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setLong(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
     @Override
-    public List<Sale> findByUser(String username) {
+    public Sale findById(Long id) {
+        final String sql = "SELECT * FROM sale WHERE id=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setLong(1, id);
+            ResultSet rs = stmt.executeQuery();
 
-        List<Sale> sales = new ArrayList<>();
-        String query = "SELECT * FROM sale WHERE nft_id IN (SELECT id FROM nft WHERE owner = ?)";
+            if (!rs.next())
+                return null;
 
-        try (PreparedStatement st = connection.prepareStatement(query)) {
-            st.setString(1, username);
-
-            ResultSet rs = st.executeQuery();
-
-            while (rs.next()) {
-                int id = rs.getInt("id");
-                String idNft = rs.getString("nft_id");
-                double price = rs.getDouble("price");
-                LocalDateTime creationDate = rs.getObject("creation_date", LocalDateTime.class);
-                LocalDateTime timeLeft = rs.getObject("end_time", LocalDateTime.class);
-
-                Sale sale = new Sale(id, idNft, price, timeLeft, creationDate);
-                sales.add(sale);
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            Sale sale = new SaleProxy(connection);
+            sale.setId(rs.getLong("id"));
+            sale.setPrice(rs.getDouble("price"));
+            sale.setCreationDate(rs.getObject("creation_date", LocalDateTime.class));
+            sale.setEndTime(rs.getObject("end_time", LocalDateTime.class));
+            return sale;
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
         }
-
-        return sales;
-    }
-    @Override
-    public List<Sale> findByPrice(double min, double max) {
-        List<Sale> sales = new ArrayList<>();
-        String query = "SELECT * FROM sale WHERE price BETWEEN ? AND ?";
-
-        try (PreparedStatement st = connection.prepareStatement(query)) {
-
-            st.setDouble(1, min);
-            st.setDouble(2, max);
-
-            ResultSet rs = st.executeQuery();
-
-            while (rs.next()) {
-                int id = rs.getInt("id");
-                String idNft = rs.getString("nft_id");
-                double price = rs.getDouble("price");
-                LocalDateTime timeLeft = rs.getObject("end_time", LocalDateTime.class);
-                LocalDateTime creationDate = rs.getObject("creation_date", LocalDateTime.class);
-
-                Sale sale = new Sale(id, idNft, price, timeLeft, creationDate);
-                sales.add(sale);
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        return sales;
-    }
-
-    @Override
-    public Sale findById(int id) {
-        Sale sale = new Sale();
-        String query = "SELECT * FROM sale WHERE id = ?";
-
-        try (PreparedStatement st = connection.prepareStatement(query)) {
-            st.setInt(1, id);
-
-            ResultSet rs = st.executeQuery();
-
-            if (rs.next()) {
-                String idNft = rs.getString("nft_id");
-                double price = rs.getDouble("price");
-                LocalDateTime creationDate = rs.getObject("creation_date", LocalDateTime.class);
-                LocalDateTime endTime = rs.getObject("end_time", LocalDateTime.class);
-
-                return new Sale(id, idNft, price, creationDate, endTime);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        return null;
     }
 }

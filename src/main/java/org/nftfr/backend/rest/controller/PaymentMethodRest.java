@@ -3,6 +3,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.nftfr.backend.persistence.DBManager;
 import org.nftfr.backend.persistence.dao.PaymentMethodDao;
 import org.nftfr.backend.persistence.model.PaymentMethod;
+import org.nftfr.backend.persistence.model.User;
 import org.nftfr.backend.rest.model.AuthToken;
 import org.nftfr.backend.rest.model.ClientErrorException;
 import org.springframework.http.HttpStatus;
@@ -15,11 +16,11 @@ import java.util.List;
 @RequestMapping("/payment")
 public class PaymentMethodRest {
     private final PaymentMethodDao paymentMethodDao = DBManager.getInstance().getPaymentMethodDao();
-    public record CreateParams(String address, int type){
-        public PaymentMethod asPaymentMethod(String username) {
+    public record CreateBody(String address, int type){
+        public PaymentMethod asPaymentMethod(User user) {
             PaymentMethod paymentMethod = new PaymentMethod();
             paymentMethod.setAddress(address);
-            paymentMethod.setUsername(username);
+            paymentMethod.setUser(user);
             paymentMethod.setType(type);
             return paymentMethod;
         }
@@ -27,9 +28,14 @@ public class PaymentMethodRest {
 
     @PutMapping("/add")
     @ResponseStatus(HttpStatus.CREATED)
-    public void add(@RequestBody CreateParams params, HttpServletRequest request) {
+    public void add(@RequestBody CreateBody bodyParams, HttpServletRequest request) {
         AuthToken authToken = AuthToken.fromRequest(request);
-        paymentMethodDao.add(params.asPaymentMethod(authToken.username()));
+        User user = DBManager.getInstance().getUserDao().findByUsername(authToken.username());
+        if (user == null)
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "User not found");
+
+        if (!paymentMethodDao.add(bodyParams.asPaymentMethod(user)))
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "The payment method is already registered");
     }
 
     @DeleteMapping("/delete/{address}")
@@ -41,8 +47,8 @@ public class PaymentMethodRest {
         if (paymentMethod == null)
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "Payment method not found");
 
-        if (!paymentMethod.getUsername().equals(authToken.username()))
-            throw new ClientErrorException(HttpStatus.FORBIDDEN, "Invalid payment method");
+        if (!paymentMethod.getUser().getUsername().equals(authToken.username()))
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "You don't have the permissions for this action");
 
         paymentMethodDao.delete(address);
     }

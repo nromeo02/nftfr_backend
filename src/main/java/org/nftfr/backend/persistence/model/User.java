@@ -11,6 +11,7 @@ public class User {
     private String encryptedPw;
     private int rank = 0;
     private boolean admin = false;
+
     public User() {}
 
     public String getUsername(){
