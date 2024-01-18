@@ -19,6 +19,7 @@ public class ReportDaoPostgres implements ReportDao {
     }
 
     @Override
+//questo nftRest
     public void createorUpdatereport(String id) {
         Report report = reportDao.getReportById(id);
         if (report == null){
@@ -46,6 +47,7 @@ public class ReportDaoPostgres implements ReportDao {
     }
 
     @Override
+    //questo con la servlet
     public List<Report> getReports() {
         String query = "SELECT * FROM reported";
         List<Report> reports = new ArrayList<>();
@@ -65,6 +67,7 @@ public class ReportDaoPostgres implements ReportDao {
     }
 
     @Override
+    //e questo ipoteticamente pure
     public Report getReportById(String id) {
         String select = "SELECT * FROM reported WHERE nft_id = ?";
         try (PreparedStatement selectStmt = connection.prepareStatement(select)) {

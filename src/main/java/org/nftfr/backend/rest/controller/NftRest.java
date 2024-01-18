@@ -3,7 +3,10 @@ package org.nftfr.backend.rest.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import org.nftfr.backend.persistence.DBManager;
 import org.nftfr.backend.persistence.dao.NftDao;
+import org.nftfr.backend.persistence.dao.ReportDao;
+import org.nftfr.backend.persistence.dao.postgres.ReportDaoPostgres;
 import org.nftfr.backend.persistence.model.Nft;
+import org.nftfr.backend.persistence.model.Report;
 import org.nftfr.backend.persistence.model.User;
 import org.nftfr.backend.rest.model.AuthToken;
 import org.nftfr.backend.rest.model.ClientErrorException;
@@ -21,6 +24,7 @@ import java.util.*;
 @RequestMapping("/nft")
 public class NftRest {
     private final  NftDao nftDao = DBManager.getInstance().getNftDao();
+    private final ReportDao reportDao = DBManager.getInstance().getReportDao();
 
     public record CreateBody(String caption, String title, Double value, ArrayList<String> tags, String data) {
         public Nft asNft(User user, NftImage image){
@@ -150,4 +154,13 @@ public class NftRest {
     }
 
     // TODO: report
+    @PutMapping("/report/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void report (@PathVariable String id, HttpServletRequest request) {
+            AuthToken.fromRequest(request);
+            if(nftDao.findById(id) == null){
+                throw new ClientErrorException(HttpStatus.NOT_FOUND, "Nft not found");
+            }
+            reportDao.createorUpdatereport(id);
+        }
 }
