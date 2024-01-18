@@ -93,13 +93,11 @@ public class UserRest {
     }
     @GetMapping("/get/{username}")
     @ResponseStatus(HttpStatus.OK)
-    public User get(@PathVariable String username){
-        User userdao = userDao.findByUsername(username);
-        if(userdao == null){
-            throw new ClientErrorException(HttpStatus.NOT_FOUND, "User not found");
-        }
-        userdao.setEncryptedPw("");
-        return userdao;
-    }
+    public User get(@PathVariable String username) {
+        User user = userDao.findByUsername(username);
+        if(user == null)
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "The user does not exist");
 
+        return user;
+    }
 }
