@@ -28,10 +28,11 @@ public class SaleRest {
     private final NftDao nftDao = DBManager.getInstance().getNftDao();
     private final PaymentMethodDao paymentMethodDao = DBManager.getInstance().getPaymentMethodDao();
 
-    public record CreateBody(String idNft, double price, LocalDateTime creationDate, Duration duration) {
-        public Sale asSale(Nft nft) {
+    public record CreateBody(String idNft, String destinationAddress, double price, LocalDateTime creationDate, Duration duration) {
+        public Sale asSale(Nft nft, PaymentMethod paymentMethod) {
             Sale sale = new Sale();
             sale.setNft(nft);
+            sale.setPaymentMethod(paymentMethod);
             sale.setPrice(price);
             sale.setCreationDate(creationDate);
 
@@ -51,10 +52,16 @@ public class SaleRest {
         if (nft == null)
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "NFT not found");
 
-        if (!nft.getOwner().getUsername().equals(authToken.username()))
+        PaymentMethod paymentMethod = paymentMethodDao.findByAddress(bodyParams.destinationAddress());
+        if (paymentMethod == null)
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "Payment method not found");
+
+        final boolean checkNftOwnership = nft.getOwner().getUsername().equals(authToken.username());
+        final boolean checkPMOwnership = paymentMethod.getUser().getUsername().equals(authToken.username());
+        if (!checkNftOwnership || !checkPMOwnership)
             throw new ClientErrorException(HttpStatus.FORBIDDEN, "You don't have the permissions for this action");
 
-        saleDao.add(bodyParams.asSale(nft));
+        saleDao.add(bodyParams.asSale(nft, paymentMethod));
     }
 
     @DeleteMapping("/delete/{id}")
