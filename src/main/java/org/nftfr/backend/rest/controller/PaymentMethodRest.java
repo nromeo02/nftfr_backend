@@ -4,48 +4,53 @@ import org.nftfr.backend.persistence.DBManager;
 import org.nftfr.backend.persistence.dao.PaymentMethodDao;
 import org.nftfr.backend.persistence.model.PaymentMethod;
 import org.nftfr.backend.rest.model.AuthToken;
+import org.nftfr.backend.rest.model.ClientErrorException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 
 @RestController
 @CrossOrigin(value = "http://localhost:4200", allowCredentials = "true")
 @RequestMapping("/payment")
 public class PaymentMethodRest {
     private final PaymentMethodDao paymentMethodDao = DBManager.getInstance().getPaymentMethodDao();
-    private record CreateParams(String address, String username, int type, double balance){
-        public PaymentMethod asPaymentMethod(){
+    public record CreateParams(String address, int type){
+        public PaymentMethod asPaymentMethod(String username) {
             PaymentMethod paymentMethod = new PaymentMethod();
             paymentMethod.setAddress(address);
             paymentMethod.setUsername(username);
             paymentMethod.setType(type);
-            paymentMethod.setBalance(balance);
             return paymentMethod;
         }
     }
+
     @PutMapping("/add")
     @ResponseStatus(HttpStatus.CREATED)
-    public void addPaymentMethod(@RequestBody CreateParams params, HttpServletRequest request) {
+    public void add(@RequestBody CreateParams params, HttpServletRequest request) {
         AuthToken authToken = AuthToken.fromRequest(request);
-        if (authToken == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
-        }
-        paymentMethodDao.add(params.asPaymentMethod());
+        paymentMethodDao.add(params.asPaymentMethod(authToken.username()));
     }
+
     @DeleteMapping("/delete/{address}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletePaymentMethod(@PathVariable String address, HttpServletRequest request) {
+    public void delete(@PathVariable String address, HttpServletRequest request) {
         AuthToken authToken = AuthToken.fromRequest(request);
-        if (authToken == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
-        }
+        PaymentMethod paymentMethod = paymentMethodDao.findByAddress(address);
 
-        PaymentMethod existingPaymentMethod = paymentMethodDao.findByAddress(address);
+        if (paymentMethod == null)
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "Payment method not found");
 
-        if (existingPaymentMethod == null || !existingPaymentMethod.getUsername().equals(authToken.username())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Payment method not found");
-        }
+        if (!paymentMethod.getUsername().equals(authToken.username()))
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "Invalid payment method");
+
         paymentMethodDao.delete(address);
+    }
+
+    @GetMapping("/get")
+    @ResponseStatus(HttpStatus.OK)
+    public List<PaymentMethod> get(HttpServletRequest request) {
+        AuthToken authToken = AuthToken.fromRequest(request);
+        return paymentMethodDao.findByUsername(authToken.username());
     }
 }

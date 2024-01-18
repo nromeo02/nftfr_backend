@@ -1,5 +1,5 @@
 {
-  "saleIdBrokerSQL" : "SELECT nextval('sale_sequence') AS id",
+  "saleIdBrokerSQL" : "select nextval('sale_sequence') as id",
   "dbPort" : "5432",
   "dbName" : "nftfr",
   "dbUsername" : "postgres",
