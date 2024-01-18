@@ -67,20 +67,24 @@ public class ReportDaoPostgres implements ReportDao {
     @Override
     public Report getReportById(String id) {
         String select = "SELECT * FROM reported WHERE nft_id = ?";
-        Report report = null;
         try (PreparedStatement selectStmt = connection.prepareStatement(select)) {
             selectStmt.setString(1, id);
             try (ResultSet resultSet = selectStmt.executeQuery()) {
+                if(!resultSet.next()){
+                    return null;
+                }
                 if (resultSet.next()) {
+                    Report report = new Report();
                     String nftId = resultSet.getString("nft_id");
                     int counter = resultSet.getInt("counter");
                     report.setNft_id(nftId);
                     report.setCounter(counter);
+                    return report;
                 }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return report;
+        return null;
     }
 }
