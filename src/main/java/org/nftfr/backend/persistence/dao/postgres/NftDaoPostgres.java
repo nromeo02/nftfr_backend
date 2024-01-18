@@ -160,16 +160,6 @@ public class NftDaoPostgres implements NftDao {
         }
     }
 
-    @Override
-    public void report(String id) {
-        // TODO: controllare che la record esista.
-        String updateQuery = "UPDATE reported SET counter = counter + 1 WHERE nft_id = ?";
-        try (PreparedStatement updateStmt = connection.prepareStatement(updateQuery)) {
-            updateStmt.setString(1, id);
-            updateStmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
+
 }
 

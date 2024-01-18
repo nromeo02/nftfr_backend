@@ -46,10 +46,6 @@ public class SaleRest {
     @PutMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
     public void createSale(@RequestBody CreateParams createParams, HttpServletRequest request) {
-        AuthToken authToken = AuthToken.fromRequest(request);
-        if (authToken == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
-        }
         saleDao.add(createParams.asSale());
     }
 
@@ -74,11 +70,7 @@ public class SaleRest {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void buy(@PathVariable int id, HttpServletRequest request, @RequestBody Map<String, String> requestBody) {
         AuthToken authToken = AuthToken.fromRequest(request);
-        if (authToken == null) {
-            throw new ClientErrorException(HttpStatus.UNAUTHORIZED, "Invalid token");
-        } else {
             Sale sale = saleDao.findById(id);
-
             if (sale == null) {
                 throw new ClientErrorException(HttpStatus.NOT_FOUND, "The sale doesn't exist");
             }
@@ -95,13 +87,13 @@ public class SaleRest {
                 throw new ClientErrorException(HttpStatus.NOT_FOUND, "Address not found or empty");
             }
             PaymentMethod paymentMethod = paymentMethodDao.findByAddress(address);
-            if (!nft.getOwner().equals(authToken.username())) {
+            if (!nft.getOwner().getUsername().equals(authToken.username())) {
                 try {
                     if (paymentMethod != null) {
                         if (paymentMethod.getBalance() >= sale.getPrice()) {
                             paymentMethod.setBalance(paymentMethod.getBalance() - sale.getPrice());
                             paymentMethodDao.update(paymentMethod);
-                            nft.setOwner(authToken.username());
+                            nft.setOwner(buyer);
                             nftDao.update(nft);
                             buyer.setRank(buyer.getRank() + 1);
                             DBManager.getInstance().getUserDao().update(buyer);
@@ -118,7 +110,6 @@ public class SaleRest {
             } else {
                 throw new ClientErrorException(HttpStatus.FORBIDDEN, "Buyer already owns the NFT");
             }
-        }
     }
 }
 
