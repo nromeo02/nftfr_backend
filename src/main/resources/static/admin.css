@@ -1,34 +1,19 @@
-/* fare la classe di actionButton, deleteNft, deleteUser  deleteSale */
-/*non funge zio cavallone */
+/* fare la classe di actionButton, deleteNft, deleteUser  deleteSale
+/*non funge zio cavallone
+
 @font-face {
     font-family: myFirstFont;
     src: url("C:/Users/Dell/Desktop/Universita/Università-terzo anno-primo semestre/Progettone/SourceSansPro-Regular.otf");
 }
-body {
-    background-color: #00aff0;
-    color: white;
-    text-align: center;
-    margin-top: 50px;
-}
+
+
+
+/*
 *{
-    font-family: myFirstFont, serif;/*che non funge, e invece funge ma solo per i bottoni a quanto pare*/
+    font-family: myFirstFont, serif;/*che non funge, e invece funge ma solo per i bottoni a quanto pare
 }
-#deleteUser{
-    position: absolute;
-    bottom: 50px;
-    left: 20px;
-}
-#deleteNft {
-    position: absolute;
-    bottom: 50px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-#deleteSale{
-    position: absolute;
-    bottom: 50px;
-    right: 20px;
-}
+
+
 #reportTable{
 
     width: 1500px;
@@ -47,28 +32,49 @@ table {
 table, th, td {
     border: 1px solid white;
 }
-*/
 
+*/
+body {
+    background-color: #00aff0;
+    color: white;
+    text-align: center;
+    margin-top: 50px;
+}
+#deleteUser{
+    position: absolute;
+    bottom: 50px;
+    left: 20px;
+}
+#deleteNft {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+#deleteSale{
+    position: absolute;
+    bottom: 50px;
+    right: 20px;
+}
 form {
     display: inline-block;
     text-align: left;
     margin-top: 20px;
 }
 .actionButton {
-        background-color: #ffffff; /* colore di sfondo */
-        color :#00aff0; /* colore del testo */
-        padding: 10px 20px; /* spaziatura interna */
-        text-align: center;
-        text-decoration: none;
-        display: inline-block;
-        font-size: 16px;
-        margin: 4px 2px;
-        cursor: pointer;
-        border-radius: 5px; /* bordi arrotondati */
-    }
-
-.actionButton:hover {
-    background-color: #00aff0; /* colore di sfondo al passaggio del mouse */
-    color : #ffffff;
+    background-color: #ffffff;
+    color :#00aff0;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
 }
 
+.actionButton:hover {
+    background-color: #00aff0;
+    color : #ffffff;
+}

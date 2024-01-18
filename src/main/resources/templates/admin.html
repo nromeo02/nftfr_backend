@@ -12,28 +12,41 @@
     <link href="/static/admin.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
-<h1>Pagina Admin</h1>
-
-<table id="reportTable" class="table table-bordered table-striped">
-    <!-- Tabella per le segnalazioni -->
-    <caption>Segnalazioni</caption>
-    <thead class="thead-dark">
-    <tr>
-        <th>ID Segnalazione</th>
-        <th>Counter</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-        <td> prova colonna 1 riga 1</td>
-        <td> prova colonna 2 riga 1</td>
-    </tr>
-    <tr th:each="report : ${reports}"></tr>
-        <td>th:text="${report.nft_id}</td>
-        <td>th:text="${report.count}</td>
-    </tbody>
-</table>
-
+<h1 class="text-center text-white p2 bg-dark bg-gradient text-uppercase">Pagina Admin</h1>
+<div class="container mt-5">
+    <table class="table table-responsive table-bordered border-dark table-hover text-center text-capitalize">
+        <!-- Tabella per le segnalazioni -->
+        <caption>Segnalazioni</caption>
+        <thead > <!-- class="thead-dark" -->
+        <tr class="table-dark table-active text-uppercase text-white">
+            <th>ID Segnalazione</th>
+            <th>Counter</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="report : ${lista_reports}">
+            <td th:text="${report.nft_id}"></td>
+            <td th:text="${report.counter}"></td>
+        </tr>
+        <tr>
+            <td>ciao</td>
+            <td>ciao</td>
+        </tr>
+        <tr>
+            <td>ciao</td>
+            <td>ciao</td>
+        </tr>
+        <tr>
+            <td>ciao</td>
+            <td>ciao</td>
+        </tr>
+        <tr>
+            <td>ciao</td>
+            <td>ciao</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
 <!-- da allinera in basso a sinistra -->
 <div id="deleteUser">
     <!-- Form per cancellare utente -->
