@@ -1,21 +1,19 @@
 package org.nftfr.backend.rest.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.nftfr.backend.ConfigManager;
 import org.nftfr.backend.persistence.DBManager;
 import org.nftfr.backend.persistence.dao.NftDao;
 import org.nftfr.backend.persistence.model.Nft;
+import org.nftfr.backend.persistence.model.User;
 import org.nftfr.backend.rest.model.AuthToken;
 import org.nftfr.backend.rest.model.ClientErrorException;
+import org.nftfr.backend.rest.model.InvalidImageException;
+import org.nftfr.backend.rest.model.NftImage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.*;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 @RestController
@@ -24,45 +22,21 @@ import java.util.*;
 public class NftRest {
     private final  NftDao nftDao = DBManager.getInstance().getNftDao();
 
-    public record CreateParams(String caption, String title, Double value, ArrayList<String> tag, String data){
-        private static String bytesToHexString(byte[] bytes) {
-            final char[] hexArray = "0123456789abcdef".toCharArray();
-            char[] hexChars = new char[bytes.length * 2];
-            for (int j = 0; j < bytes.length; j++) {
-                int v = bytes[j] & 0xFF;
-                hexChars[j * 2] = hexArray[v >>> 4];
-                hexChars[j * 2 + 1] = hexArray[v & 0x0F];
-            }
-            return new String(hexChars);
-        }
-
-        private static String makeNftId(byte[] imageData) {
-            try {
-                MessageDigest hasher = MessageDigest.getInstance("SHA-256");
-                return bytesToHexString(hasher.digest(imageData));
-            } catch (NoSuchAlgorithmException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-
-        private byte[] getDecodedImage() {
-            return Base64.getDecoder().decode(data);
-        }
-
-        public Nft asNft(String username, byte[] imageData){
+    public record CreateParams(String caption, String title, Double value, ArrayList<String> tags, String data){
+        public Nft asNft(User user, NftImage image){
             Nft nft = new Nft();
             nft.setCaption(caption);
             nft.setTitle(title);
             nft.setValue(value);
-            nft.setTag(tag);
-            nft.setAuthor(username);
-            nft.setOwner(username);
-            nft.setId(makeNftId(imageData));
+            nft.setTags(tags);
+            nft.setAuthor(user);
+            nft.setOwner(user);
+            nft.setId(image.getId());
             return nft;
         }
     }
 
-    public record UpdateParams(String title, String caption, Double value, ArrayList<String> tag) {}
+    public record UpdateParams(String title, String caption, Double value, ArrayList<String> tags) {}
 
     public record FindParams(String owner, String author, String query, Double minPrice, Double maxPrice) {}
 
@@ -70,31 +44,28 @@ public class NftRest {
     @ResponseStatus(HttpStatus.CREATED)
     public Map<String, String> create(@RequestBody CreateParams params, HttpServletRequest req) {
         AuthToken authToken = AuthToken.fromRequest(req);
+        User user = DBManager.getInstance().getUserDao().findByUsername(authToken.username());
+        if (user == null)
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "The user does not exist");
 
-        // Convert image to PNG.
-        byte[] imageData;
-        ByteArrayInputStream imageInputStream = new ByteArrayInputStream(params.getDecodedImage());
-        ByteArrayOutputStream imageOutputStream = new ByteArrayOutputStream();
+        // Decode image.
+        NftImage image = new NftImage();
+
         try {
-            BufferedImage bufferedImage = ImageIO.read(imageInputStream);
-            if (bufferedImage == null)
-                throw new ClientErrorException(HttpStatus.BAD_REQUEST, "Invalid image type");
-
-            ImageIO.write(bufferedImage, "png", imageOutputStream);
-            imageData = imageOutputStream.toByteArray();
-        } catch (IOException ex) {
-            throw new ClientErrorException(HttpStatus.BAD_REQUEST, "Invalid image type");
+            image.loadFromEncodedData(params.data);
+        } catch (InvalidImageException ex) {
+            throw new ClientErrorException(HttpStatus.BAD_REQUEST, "Invalid image");
         }
 
         // Create nft record.
-        Nft nft = params.asNft(authToken.username(), imageData);
+        Nft nft = params.asNft(user, image);
         nftDao.create(nft);
 
-        // Save the image locally.
-        final String imagePath = ConfigManager.getInstance().getNftImagePath() + nft.getId();
-        try (FileOutputStream file = new FileOutputStream(imagePath)) {
-            file.write(imageData);
+        // Save the image to file.
+        try {
+            image.saveToFile();
         } catch (IOException ex) {
+            // Should not happen.
             nftDao.delete(nft.getId());
             throw new RuntimeException(ex);
         }
@@ -111,13 +82,13 @@ public class NftRest {
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "The nft does not exist");
 
         // Only owners can update their nfts.
-        if (!nft.getOwner().equals(authToken.username()))
+        if (!nft.getOwner().getUsername().equals(authToken.username()))
             throw new ClientErrorException(HttpStatus.FORBIDDEN, "You don't have the permissions for this action");
 
         nft.setTitle(params.title());
         nft.setCaption(params.caption());
         nft.setValue(params.value());
-        nft.setTag(params.tag());
+        nft.setTags(params.tags());
         nftDao.update(nft);
     }
 
@@ -130,11 +101,11 @@ public class NftRest {
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "The nft does not exist");
 
         // Only admins and the owner can delete a nft.
-        if (!nft.getOwner().equals(authToken.username()) && !authToken.admin())
+        if (!nft.getOwner().getUsername().equals(authToken.username()) && !authToken.admin())
             throw new ClientErrorException(HttpStatus.FORBIDDEN, "You don't have the permissions for this action");
 
         nftDao.delete(id);
-        // TODO: delete image.
+        NftImage.deleteWithId(id);
     }
 
     @PostMapping(value = "/find")
@@ -158,11 +129,12 @@ public class NftRest {
 
         return nftDao.findByQuery(queryTokens, minPrice, maxPrice);
     }
+
     @GetMapping("/get/{id}")
     @ResponseStatus(HttpStatus.OK)
     public Nft get(@PathVariable String id) {
         Nft nft = nftDao.findByPrimaryKey(id);
-        if(nft == null)
+        if (nft == null)
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "The nft does not exist");
 
         return nft;
@@ -171,12 +143,10 @@ public class NftRest {
     @GetMapping(value = "/get/{id}/image", produces = MediaType.IMAGE_PNG_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public byte[] getImage(@PathVariable String id) {
-        try (FileInputStream file = new FileInputStream(ConfigManager.getInstance().getNftImagePath() + id)) {
-            return file.readAllBytes();
+        try {
+            return NftImage.loadWithId(id).getPngData();
         } catch (FileNotFoundException ex) {
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "The nft does not exist");
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
         }
     }
 }

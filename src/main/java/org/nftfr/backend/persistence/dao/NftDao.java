@@ -7,11 +7,10 @@ import java.util.Set;
 
 public interface NftDao {
     void create(Nft nft);
-    void update (Nft nft);
-    void delete (String id);
+    void update(Nft nft);
+    void delete(String id);
     Nft findByPrimaryKey(String id);
     List<Nft> findByOwner(String username);
     List<Nft> findByAuthor(String username);
     List<Nft> findByQuery(Set<String> tokens, double minPrice, double maxPrice);
-
 }
