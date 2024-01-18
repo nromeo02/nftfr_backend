@@ -1,40 +1,39 @@
 package org.nftfr.backend.persistence.model;
-import java.time.*;
-import java.time.Duration;
+
+import java.time.LocalDateTime;
+
 public class Sale {
-    private int id;
-    private String idNft;
+    private Long id;
+    private Nft nft;
+    private PaymentMethod paymentMethod;
     private double price;
     private LocalDateTime creationDate;
     private LocalDateTime endTime = null;
-    public Sale(){}
-    public Sale(int id, String idNft, double price,  LocalDateTime creationDate, LocalDateTime endTime) {
-        this.id = id;
-        this.idNft = idNft;
-        this.price = price;
-        this.creationDate = creationDate;
-        this.endTime = endTime;
-    }
-    public void addDurationTime(Duration duration){
-        this.endTime = this.endTime.plus(duration);
-    }
-    public void addDurationDate(Duration duration){
-        this.creationDate = this.creationDate.plus(duration);
-    }
-    public int getId() {
+
+    public Sale() {}
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public String getIdNft() {
-        return idNft;
+    public Nft getNft() {
+        return nft;
     }
 
-    public void setIdNft(String idNft) {
-        this.idNft = idNft;
+    public void setNft(Nft nft) {
+        this.nft = nft;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     public double getPrice() {
@@ -45,18 +44,16 @@ public class Sale {
         this.price = price;
     }
 
-    public LocalDateTime getEndTime() {
-        return endTime;
-    }
-
     public LocalDateTime getCreationDate() {
         return creationDate;
     }
 
-
-
     public void setCreationDate(LocalDateTime creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
     }
 
     public void setEndTime(LocalDateTime endTime) {

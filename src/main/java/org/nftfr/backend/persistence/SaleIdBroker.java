@@ -11,7 +11,7 @@ public class SaleIdBroker {
     private static final String SQL = ConfigManager.getInstance().getSaleIdBrokerSQL();
 
     public static Long getId(Connection connection) {
-        Long id;
+        long id;
         try {
             PreparedStatement statement = connection.prepareStatement(SQL);
             ResultSet result = statement.executeQuery();
