@@ -5,7 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.InputStream;
 
 public class ConfigManager {
-    private record ConfigData(String dbPort, String dbName, String dbUsername, String dbPassword, String jwtSecret, String nftImagePath) {}
+    private record ConfigData(String saleIdBrokerSQL, String dbPort, String dbName, String dbUsername, String dbPassword,
+                              String jwtSecret, String nftImagePath) {}
     static private ConfigManager instance = null;
     private final ConfigData configData;
 
@@ -27,6 +28,7 @@ public class ConfigManager {
         return instance;
     }
 
+    public String getSaleIdBrokerSQL() { return configData.saleIdBrokerSQL(); }
     public String getDBPort() { return configData.dbPort(); }
     public String getDBName() { return configData.dbName(); }
     public String getDBUsername() { return configData.dbUsername(); }
