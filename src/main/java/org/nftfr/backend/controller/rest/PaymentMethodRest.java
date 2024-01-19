@@ -22,6 +22,7 @@ public class PaymentMethodRest {
             paymentMethod.setAddress(address);
             paymentMethod.setUser(user);
             paymentMethod.setType(type);
+//            paymentMethod.setBalance(balance);
             return paymentMethod;
         }
     }

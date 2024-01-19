@@ -23,12 +23,11 @@ public class PaymentMethodDaoPostgres implements PaymentMethodDao {
         if (findByAddress(paymentMethod.getAddress()) != null)
             return false;
 
-        final String sql = "INSERT INTO payment_methods (address, username, type, balance) VALUES (?, ?, ?, ?);";
+        final String sql = "INSERT INTO payment_methods (address, username, type) VALUES (?, ?, ?);";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, paymentMethod.getAddress());
             stmt.setString(2, paymentMethod.getUser().getUsername());
             stmt.setInt(3, paymentMethod.getType());
-            stmt.setDouble(4, paymentMethod.getBalance());
             stmt.executeUpdate();
             return true;
         } catch (SQLException ex) {
