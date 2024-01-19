@@ -6,11 +6,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.nftfr.backend.persistence.DBManager;
-import org.nftfr.backend.persistence.dao.UserDao;
+import org.nftfr.backend.persistence.dao.SaleDao;
 
-@WebServlet("/admin/delete/user")
-public class DeleteUserServlet extends HttpServlet {
-    private final UserDao userDao = DBManager.getInstance().getUserDao();
+@WebServlet("/admin/delete/sale")
+public class DeleteSaleServlet extends HttpServlet {
+    private final SaleDao saleDao = DBManager.getInstance().getSaleDao();
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res) {
@@ -21,8 +21,8 @@ public class DeleteUserServlet extends HttpServlet {
             return;
         }
 
-        final String targetUsername = req.getParameter("targetUsername");
-        userDao.delete(targetUsername);
+        final Long saleId = Long.parseLong(req.getParameter("saleId"));
+        saleDao.remove(saleId);
 
         // TODO: redirect
     }
