@@ -29,16 +29,17 @@ public class SaleRest {
     private final NftDao nftDao = DBManager.getInstance().getNftDao();
     private final PaymentMethodDao paymentMethodDao = DBManager.getInstance().getPaymentMethodDao();
 
-    public record CreateBody(String idNft, String destinationAddress, double price, LocalDateTime creationDate, Duration duration) {
+    public record CreateBody(String idNft, String destinationAddress, double price, Duration duration) {
         public Sale asSale(Nft nft, PaymentMethod paymentMethod) {
             Sale sale = new Sale();
+            LocalDateTime now = LocalDateTime.now();
             sale.setNft(nft);
             sale.setPaymentMethod(paymentMethod);
             sale.setPrice(price);
-            sale.setCreationDate(creationDate);
+            sale.setCreationDate(now);
 
-            if (!duration.isZero())
-                sale.setEndTime(creationDate.plus(duration));
+            if (duration != null && !duration.isZero())
+                sale.setEndTime(now.plus(duration));
 
             return sale;
         }
@@ -46,7 +47,7 @@ public class SaleRest {
 
     @PutMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
-    public void createSale(@RequestBody CreateBody bodyParams, HttpServletRequest req) {
+    public void create(@RequestBody CreateBody bodyParams, HttpServletRequest req) {
         AuthToken authToken = AuthToken.fromRequest(req);
         Nft nft = nftDao.findById(bodyParams.idNft());
 
@@ -67,7 +68,7 @@ public class SaleRest {
 
     @DeleteMapping("/delete/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteSale(@PathVariable Long id, HttpServletRequest req) {
+    public void delete(@PathVariable Long id, HttpServletRequest req) {
         AuthToken authToken = AuthToken.fromRequest(req);
         Sale sale = saleDao.findById(id);
         if (sale == null)
