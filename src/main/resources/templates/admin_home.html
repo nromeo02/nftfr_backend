@@ -15,11 +15,9 @@
 </head>
 
 <body>
-    <h1 class="text-center text-white p2 bg-dark bg-gradient text-uppercase">Pagina Admin</h1>
+    <h1 class="text-center text-white p2 text-uppercase">Pagina Admin</h1>
     <div class="container mt-5">
         <table class="table table-responsive table-bordered border-dark table-hover text-center text-capitalize">
-            <!-- Tabella per le segnalazioni -->
-            <caption>Segnalazioni</caption>
             <thead> <!-- class="thead-dark" -->
                 <tr class="table-dark table-active text-uppercase text-white">
                     <th>ID Segnalazione</th>
@@ -40,9 +38,9 @@
     <!-- da allinera in basso a sinistra -->
     <div id="deleteUser">
         <!-- Form per cancellare utente -->
-        <form action="/admin/delete-user" method="post">
+        <form action="/admin/delete/user" method="post">
             <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
+            <input type="text" id="username" name="targetUsername" required>
             <button type="submit" class="actionButton">Cancella Utente</button>
         </form>
     </div>
@@ -50,7 +48,7 @@
     <!--da allineare al centro in basso -->
     <div id="deleteNft">
         <!-- Form per cancellare NFT -->
-        <form action="/admin/delete-nft" method="post">
+        <form action="/admin/delete/nft" method="post">
             <label for="nftId">ID NFT:</label>
             <input type="text" id="nftId" name="nftId" required>
             <button type="submit" class="actionButton">Cancella NFT</button>
@@ -60,13 +58,18 @@
     <!-- da allineare in basso a destra -->
     <div id="deleteSale">
         <!-- Form per cancellare Sale -->
-        <form action="/admin/delete-sale" method="post">
+        <form action="/admin/delete/sale" method="post">
             <label for="saleId">ID Sale:</label>
             <input type="text" id="saleId" name="saleId" required>
             <button type="submit" class="actionButton">Cancella Sale</button>
         </form>
     </div>
+        <div id="logout">
+            <form action="/admin/logout" method="get">
+                <label th:text="${username}" ></label>
+                <button type="submit" class="actionButton">Logout</button>
+            </form>
+    </div>
 
 </body>
-
 </html>
