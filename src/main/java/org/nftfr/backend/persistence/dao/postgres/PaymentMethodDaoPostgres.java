@@ -60,6 +60,17 @@ public class PaymentMethodDaoPostgres implements PaymentMethodDao {
     }
 
     @Override
+    public void deleteByUsername(String username) {
+        final String sql = "DELETE FROM payment_methods WHERE username=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            stmt.executeUpdate();
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
     public PaymentMethod findByAddress(String address) {
         final String sql = "SELECT * FROM payment_methods WHERE address=?;";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {

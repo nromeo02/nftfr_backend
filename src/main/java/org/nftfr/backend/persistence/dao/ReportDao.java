@@ -6,6 +6,7 @@ import java.util.List;
 
 public interface ReportDao {
     void createOrUpdateReport(String id);
+    void delete(String id);
     List<Report> getReports();
     Report getReportById(String id);
 }

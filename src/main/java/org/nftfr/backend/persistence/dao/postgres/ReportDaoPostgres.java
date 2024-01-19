@@ -37,6 +37,17 @@ public class ReportDaoPostgres implements ReportDao {
     }
 
     @Override
+    public void delete(String id) {
+        final String sql = "DELETE FROM reported WHERE nft_id=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
     public List<Report> getReports() {
         final String sql = "SELECT * FROM reported;";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {

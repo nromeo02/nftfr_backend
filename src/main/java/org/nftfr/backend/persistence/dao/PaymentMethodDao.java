@@ -9,6 +9,7 @@ public interface PaymentMethodDao {
     boolean add(PaymentMethod paymentMethod);
     void update(PaymentMethod paymentMethod);
     void delete(String address);
+    void deleteByUsername(String username);
     PaymentMethod findByAddress(String address);
     List<PaymentMethod> findByUsername(String username);
 }
