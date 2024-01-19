@@ -9,7 +9,7 @@ public class MoneyConverter {
     private static final String URL = "https://api.etherscan.io";
     private static final String ENDPOINT = "/api?module=stats&action=ethprice";
     private static MoneyConverter instance = null;
-    private WebClient client;
+    private final WebClient client;
     private LocalDateTime lastUpdated = null;
 
     private record Result(Double ethbtc, Long ethbtc_timestamp, Double ethusd, Long ethusd_timestamp) {}
@@ -39,6 +39,7 @@ public class MoneyConverter {
             lastUpdated = now;
         }
 
+        assert lastResponse != null;
         return lastResponse.result().ethusd();
     }
 
