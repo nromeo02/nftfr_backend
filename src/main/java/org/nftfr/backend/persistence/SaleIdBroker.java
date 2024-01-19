@@ -1,14 +1,12 @@
 package org.nftfr.backend.persistence;
 
-import org.nftfr.backend.utility.ConfigManager;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class SaleIdBroker {
-    private static final String SQL = ConfigManager.getInstance().getSaleIdBrokerSQL();
+    private static final String SQL = "select nextval('sale_sequence') as id;";
 
     public static Long getId(Connection connection) {
         long id;
