@@ -78,8 +78,12 @@ public class UserRest {
         if (user == null)
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "User not found");
 
-        // TODO: remove all referenced records.
+        // Remove all payment methods and nfts for this user, then remove the user.
+        // TODO: handle NFT removal (it will not work for now if the user owns any NFT).
+        DBManager.getInstance().beginTransaction();
+        DBManager.getInstance().getPaymentMethodDao().deleteByUsername(authToken.username());
         userDao.delete(authToken.username());
+        DBManager.getInstance().endTransaction();
     }
 
     @GetMapping("/get/{username}")

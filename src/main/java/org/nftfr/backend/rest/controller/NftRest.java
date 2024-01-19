@@ -105,7 +105,13 @@ public class NftRest {
         if (!nft.getOwner().getUsername().equals(authToken.username()))
             throw new ClientErrorException(HttpStatus.FORBIDDEN, "You don't have the permissions for this action");
 
+        // Delete all reports and sales related to this NFT, then delete the NFT.
+        DBManager.getInstance().beginTransaction();
+        DBManager.getInstance().getReportDao().delete(id);
+        DBManager.getInstance().getSaleDao().removeByNftId(id);
         nftDao.delete(id);
+        DBManager.getInstance().endTransaction();
+
         NftImage.deleteWithId(id);
     }
 

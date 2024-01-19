@@ -45,6 +45,17 @@ public class SaleDaoPostgres implements SaleDao {
     }
 
     @Override
+    public void removeByNftId(String nftId) {
+        final String sql = "DELETE FROM sale WHERE nft_id=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, nftId);
+            stmt.executeUpdate();
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
     public Sale findById(Long id) {
         final String sql = "SELECT * FROM sale WHERE id=?;";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
