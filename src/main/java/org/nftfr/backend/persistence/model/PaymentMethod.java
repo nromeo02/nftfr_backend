@@ -2,7 +2,7 @@ package org.nftfr.backend.persistence.model;
 
 public class PaymentMethod {
     public static final int TYPE_ETH = 0;
-    public static final int TYPE_EUR = 1;
+    public static final int TYPE_USD = 1;
 
     private String address;
     private User user;

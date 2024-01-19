@@ -12,6 +12,7 @@ import org.nftfr.backend.persistence.model.Nft;
 import org.nftfr.backend.persistence.model.User;
 import org.nftfr.backend.utility.AuthToken;
 import org.nftfr.backend.utility.ClientErrorException;
+import org.nftfr.backend.utility.MoneyConverter;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -101,19 +102,37 @@ public class SaleRest {
             throw new ClientErrorException(HttpStatus.FORBIDDEN, "You already own this nft");
 
         // Find and verify the payment method.
-        PaymentMethod paymentMethod = paymentMethodDao.findByAddress(bodyParams.get("address"));
-        if (paymentMethod == null)
+        PaymentMethod buyerPM = paymentMethodDao.findByAddress(bodyParams.get("address"));
+        if (buyerPM == null)
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "Payment method not found");
 
-        if (!paymentMethod.getUser().getUsername().equals(buyer.getUsername()))
+        if (!buyerPM.getUser().getUsername().equals(buyer.getUsername()))
             throw new ClientErrorException(HttpStatus.FORBIDDEN, "Invalid payment method");
 
-        if (paymentMethod.getBalance() < sale.getPrice())
+        // Convert money if required.
+        double buyerBalance = buyerPM.getBalance();
+        PaymentMethod sellerPM = sale.getPaymentMethod();
+        if (buyerPM.getType() != sellerPM.getType()) {
+            if (sellerPM.getType() == PaymentMethod.TYPE_ETH) {
+                buyerBalance = MoneyConverter.getInstance().convertUsdToEth(buyerBalance);
+            } else {
+                buyerBalance = MoneyConverter.getInstance().convertEthToUsd(buyerBalance);
+            }
+        }
+
+        if (buyerBalance < sale.getPrice())
             throw new ClientErrorException(HttpStatus.FORBIDDEN, "Insufficient balance");
 
         // Transfer money.
-        paymentMethod.setBalance(paymentMethod.getBalance() - sale.getPrice());
-        sale.getPaymentMethod().setBalance(sale.getPaymentMethod().getBalance() + sale.getPrice());
+        if (buyerPM.getType() != sellerPM.getType()) {
+            if (sellerPM.getType() == PaymentMethod.TYPE_ETH) {
+                buyerPM.setBalance(MoneyConverter.getInstance().convertEthToUsd(buyerBalance - sale.getPrice()));
+            } else {
+                buyerPM.setBalance(MoneyConverter.getInstance().convertUsdToEth(buyerBalance - sale.getPrice()));
+            }
+        }
+
+        sellerPM.setBalance(sellerPM.getBalance() + sale.getPrice());
 
         // Transfer ownership.
         nft.setOwner(buyer);
@@ -123,8 +142,8 @@ public class SaleRest {
 
         // Apply database changes.
         DBManager.getInstance().beginTransaction();
-        paymentMethodDao.update(paymentMethod);
-        paymentMethodDao.update(sale.getPaymentMethod());
+        paymentMethodDao.update(buyerPM);
+        paymentMethodDao.update(sellerPM);
         nftDao.update(nft);
         saleDao.remove(id);
         DBManager.getInstance().endTransaction();
