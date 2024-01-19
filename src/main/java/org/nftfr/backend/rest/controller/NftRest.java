@@ -40,7 +40,7 @@ public class NftRest {
 
     public record UpdateBody(String title, String caption, Double value, ArrayList<String> tags) {}
 
-    public record FindBody(String owner, String author, String query, Double minPrice, Double maxPrice) {}
+    public record FindBody(String owner, String author, String query, Double minPrice, Double maxPrice, Boolean onSale) {}
 
     @PutMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
@@ -123,12 +123,13 @@ public class NftRest {
         // Filter by other parameters.
         double minPrice = bodyParams.minPrice() != null ? bodyParams.minPrice() : 0.0;
         double maxPrice = bodyParams.maxPrice() != null ? bodyParams.maxPrice() : Double.MAX_VALUE;
+        boolean onSale = bodyParams.onSale() != null ? bodyParams.onSale() : false;
 
         HashSet<String> queryTokens = new HashSet<>();
         if (bodyParams.query() != null)
             queryTokens.addAll(Arrays.asList(bodyParams.query().split(" ")));
 
-        return nftDao.findByQuery(queryTokens, minPrice, maxPrice);
+        return nftDao.findByQuery(queryTokens, minPrice, maxPrice, onSale);
     }
 
     @GetMapping("/get/{id}")
@@ -153,7 +154,7 @@ public class NftRest {
 
     @PutMapping("/report/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void report (@PathVariable String id, HttpServletRequest req) {
+    public void report(@PathVariable String id, HttpServletRequest req) {
         AuthToken authToken = AuthToken.fromRequest(req);
         User user = DBManager.getInstance().getUserDao().findByUsername(authToken.username());
         if (user == null)

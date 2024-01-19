@@ -117,7 +117,7 @@ public class NftDaoPostgres implements NftDao {
     }
 
     @Override
-    public List<Nft> findByQuery(Set<String> tokens, double minPrice, double maxPrice) {
+    public List<Nft> findByQuery(Set<String> tokens, double minPrice, double maxPrice, boolean onSale) {
         StringBuilder sql = new StringBuilder();
 
         // Build sql statement.
@@ -125,7 +125,11 @@ public class NftDaoPostgres implements NftDao {
             if (i != 0)
                 sql.append(" UNION ");
 
-            sql.append("(SELECT * FROM nft WHERE ((title LIKE ?) OR (caption LIKE ?) OR (tags LIKE ?)) AND (value BETWEEN ? AND ?))");
+            if (onSale) {
+                sql.append("(SELECT n.* FROM nft n, sale s WHERE n.id = s.nft_id AND ((title LIKE ?) OR (caption LIKE ?) OR (tags LIKE ?)) AND (value BETWEEN ? AND ?))");
+            } else {
+                sql.append("(SELECT * FROM nft WHERE ((title LIKE ?) OR (caption LIKE ?) OR (tags LIKE ?)) AND (value BETWEEN ? AND ?))");
+            }
         }
 
         try (PreparedStatement stmt = connection.prepareStatement(sql.toString())) {
