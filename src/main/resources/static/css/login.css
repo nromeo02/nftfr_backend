@@ -1,0 +1,41 @@
+@font-face {
+    font-family: SourceSansPro;
+    src: url("/static/fonts/SourceSansPro-Regular.otf");
+}
+
+body {
+    background-color: #00aff0;
+    color: white;
+    font-family: SourceSansPro, 'Times New Roman', Times, serif;
+    text-align: center;
+}
+
+input {
+    background-color: #ffffff;
+    color: black;
+    padding: 8px 16px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: text;
+    border-radius: 6px;
+}
+
+button {
+    background-color: #ffffff;
+    color: #00aff0;
+    padding: 8px 16px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button:hover {
+    background-color: #00aff0;
+    color: #ffffff;
+}

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Admin Login</title>
+    <link href="/static/css/login.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+    <h1>Accedi con il tuo account admin</h1>
+
+    <!-- Show the user an error message on failed attempts -->
+    <label th:if="${error_code == 1}">Errore: l'utente non esiste</label>
+    <label th:if="${error_code == 2}">Errore: autenticazione fallita</label>
+    <label th:if="${error_code == 3}">Errore: l'utente non ha i permessi richiesti</label>
+    <br th:if="${error_code != null}"><br>
+
+    <!-- Login form -->
+    <form id="login_form" method="post" action="/admin/login">
+        <label for="username">Username:</label>
+        <br>
+        <input type="text" id="username" name="username">
+        <br>
+        <label for="password">Password:</label>
+        <br>
+        <input type="password" id="password" name="password">
+    </form>
+    <button type="submit" form="login_form">Accedi</button>
+</body>
+
+</html>

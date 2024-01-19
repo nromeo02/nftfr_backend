@@ -12,78 +12,63 @@ import java.util.List;
 
 public class ReportDaoPostgres implements ReportDao {
     private final Connection connection;
-    private ReportDaoPostgres reportDao;
 
     public ReportDaoPostgres(Connection connection) {
         this.connection = connection;
     }
 
     @Override
-//questo nftRest
-    public void createorUpdatereport(String id) {
+    public void createOrUpdateReport(String id) {
         Report report = getReportById(id);
-        if (report == null){
-            String insert = "INSERT INTO reported (nft_id, counter) VALUES (?, 1)";
-            try (PreparedStatement insertStmt = connection.prepareStatement(insert)) {
-                insertStmt.setString(1, id);
-                insertStmt.executeUpdate();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        }else{
-            String update = "UPDATE reported SET counter = counter + 1 WHERE nft_id = ?";
 
-            try (PreparedStatement updateStmt = connection.prepareStatement(update)) {
-                // Set the parameters for the prepared statement
-                updateStmt.setString(1, id);
+        String sql;
+        if (report == null) {
+            sql = "INSERT INTO reported (nft_id, counter) VALUES (?, 1);";
+        } else {
+            sql = "UPDATE reported SET counter = counter + 1 WHERE nft_id=?;";
+        }
 
-                // Execute the update
-                updateStmt.executeUpdate();
-
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
     @Override
-    //questo con la servlet
     public List<Report> getReports() {
-        String query = "SELECT * FROM reported";
-        List<Report> reports = new ArrayList<>();
-        try (PreparedStatement selectStmt = connection.prepareStatement(query)) {
-            try (ResultSet resultSet = selectStmt.executeQuery()) {
-                while (resultSet.next()) {
-                    String nftId = resultSet.getString("nft_id");
-                    int counter = resultSet.getInt("counter");
-                    Report report = new Report(nftId, counter);
-                    reports.add(report);
-                }
+        final String sql = "SELECT * FROM reported;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+
+            ArrayList<Report> reports = new ArrayList<>();
+            while (rs.next()) {
+                Report report = new Report();
+                report.setNftId(rs.getString("nft_id"));
+                report.setCounter(rs.getInt("counter"));
+                reports.add(report);
             }
+            return reports;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return reports;
     }
 
     @Override
-    //e questo ipoteticamente pure
     public Report getReportById(String id) {
-        String select = "SELECT * FROM reported WHERE nft_id = ?";
-        try (PreparedStatement selectStmt = connection.prepareStatement(select)) {
-            selectStmt.setString(1, id);
-            try (ResultSet resultSet = selectStmt.executeQuery()) {
-                if (!resultSet.next()) {
-                    return null;
-                } else {
-                        Report report = new Report();
-                        String nftId = resultSet.getString("nft_id");
-                        int counter = resultSet.getInt("counter");
-                        report.setNft_id(nftId);
-                        report.setCounter(counter);
-                        return report;
-                }
-            }
+        final String sql = "SELECT * FROM reported WHERE nft_id=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (!rs.next())
+                return null;
+
+            Report report = new Report();
+            report.setNftId(rs.getString("nft_id"));
+            report.setCounter(rs.getInt("counter"));
+            return report;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

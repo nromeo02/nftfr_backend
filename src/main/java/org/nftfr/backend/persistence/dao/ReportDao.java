@@ -5,7 +5,7 @@ import org.nftfr.backend.persistence.model.Report;
 import java.util.List;
 
 public interface ReportDao {
-    void createorUpdatereport(String id);
+    void createOrUpdateReport(String id);
     List<Report> getReports();
     Report getReportById(String id);
 }

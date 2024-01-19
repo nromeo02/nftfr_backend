@@ -70,26 +70,16 @@ public class UserRest {
         userDao.update(user);
     }
 
-    private void delete(String username) {
-        User user = userDao.findByUsername(username);
+    @DeleteMapping(value = "/delete")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(HttpServletRequest req) {
+        AuthToken authToken = AuthToken.fromRequest(req);
+        User user = userDao.findByUsername(authToken.username());
         if (user == null)
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "User not found");
 
-        userDao.delete(username);
-    }
-
-    @DeleteMapping(value = "/delete")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteSelf(HttpServletRequest req) { delete(AuthToken.fromRequest(req).username()); }
-
-    @DeleteMapping(value = "/delete/{username}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteUser(@PathVariable String username, HttpServletRequest req) {
-        AuthToken authToken = AuthToken.fromRequest(req);
-        if (!authToken.admin())
-            throw new ClientErrorException(HttpStatus.FORBIDDEN, "You don't have the permissions for this action");
-
-       delete(username);
+        // TODO: remove all referenced records.
+        userDao.delete(authToken.username());
     }
 
     @GetMapping("/get/{username}")

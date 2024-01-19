@@ -15,7 +15,7 @@ import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 
-public record AuthToken(@JsonIgnore String username, @JsonIgnore boolean admin, String token) {
+public record AuthToken(@JsonIgnore String username, String token) {
     private static final SecretKey SECRET = decodeSecret();
 
     private static SecretKey decodeSecret() {
@@ -29,11 +29,10 @@ public record AuthToken(@JsonIgnore String username, @JsonIgnore boolean admin, 
         // Set expiration after 1 day.
         exp.add(Calendar.DAY_OF_YEAR, 1);
 
-        return new AuthToken(user.getUsername(), user.isAdmin(), Jwts.builder()
+        return new AuthToken(user.getUsername(), Jwts.builder()
                 .subject(user.getUsername())
                 .issuedAt(now.getTime())
                 .expiration(exp.getTime())
-                .claim("admin", user.isAdmin())
                 .signWith(SECRET)
                 .compact());
     }
@@ -50,7 +49,7 @@ public record AuthToken(@JsonIgnore String username, @JsonIgnore boolean admin, 
                 if (tokenData.getExpiration().before(new Date()))
                     throw new ClientErrorException(HttpStatus.FORBIDDEN, "Token expired");
 
-                return new AuthToken(tokenData.getSubject(), tokenData.get("admin", Boolean.class), token);
+                return new AuthToken(tokenData.getSubject(), token);
             } catch (JwtException ex) {
                 throw new ClientErrorException(HttpStatus.FORBIDDEN, "Invalid token");
             }

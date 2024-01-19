@@ -40,30 +40,35 @@ body {
     text-align: center;
     margin-top: 50px;
 }
-#deleteUser{
+
+#deleteUser {
     position: absolute;
     bottom: 50px;
     left: 20px;
 }
+
 #deleteNft {
     position: absolute;
     bottom: 50px;
     left: 50%;
     transform: translateX(-50%);
 }
-#deleteSale{
+
+#deleteSale {
     position: absolute;
     bottom: 50px;
     right: 20px;
 }
+
 form {
     display: inline-block;
     text-align: left;
     margin-top: 20px;
 }
+
 .actionButton {
     background-color: #ffffff;
-    color :#00aff0;
+    color: #00aff0;
     padding: 10px 20px;
     text-align: center;
     text-decoration: none;
@@ -76,5 +81,5 @@ form {
 
 .actionButton:hover {
     background-color: #00aff0;
-    color : #ffffff;
+    color: #ffffff;
 }
