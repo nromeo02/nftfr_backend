@@ -1,6 +1,6 @@
 package org.nftfr.backend.persistence;
 
-import org.nftfr.backend.ConfigManager;
+import org.nftfr.backend.utility.ConfigManager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

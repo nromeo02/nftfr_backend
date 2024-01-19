@@ -1,4 +1,4 @@
-package org.nftfr.backend.servlet;
+package org.nftfr.backend.controller.servlet;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;

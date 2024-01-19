@@ -1,11 +1,11 @@
-package org.nftfr.backend.rest.controller;
+package org.nftfr.backend.controller.rest;
 import jakarta.servlet.http.HttpServletRequest;
 import org.nftfr.backend.persistence.DBManager;
 import org.nftfr.backend.persistence.dao.PaymentMethodDao;
 import org.nftfr.backend.persistence.model.PaymentMethod;
 import org.nftfr.backend.persistence.model.User;
-import org.nftfr.backend.rest.model.AuthToken;
-import org.nftfr.backend.rest.model.ClientErrorException;
+import org.nftfr.backend.utility.AuthToken;
+import org.nftfr.backend.utility.ClientErrorException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 

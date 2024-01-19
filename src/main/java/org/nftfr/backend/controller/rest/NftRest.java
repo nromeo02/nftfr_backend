@@ -1,4 +1,4 @@
-package org.nftfr.backend.rest.controller;
+package org.nftfr.backend.controller.rest;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.nftfr.backend.persistence.DBManager;
@@ -6,10 +6,10 @@ import org.nftfr.backend.persistence.dao.NftDao;
 import org.nftfr.backend.persistence.dao.ReportDao;
 import org.nftfr.backend.persistence.model.Nft;
 import org.nftfr.backend.persistence.model.User;
-import org.nftfr.backend.rest.model.AuthToken;
-import org.nftfr.backend.rest.model.ClientErrorException;
-import org.nftfr.backend.rest.model.InvalidImageException;
-import org.nftfr.backend.rest.model.NftImage;
+import org.nftfr.backend.utility.AuthToken;
+import org.nftfr.backend.utility.ClientErrorException;
+import org.nftfr.backend.utility.InvalidImageException;
+import org.nftfr.backend.utility.NftImage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;

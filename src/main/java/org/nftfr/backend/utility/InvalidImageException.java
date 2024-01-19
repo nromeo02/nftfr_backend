@@ -1,4 +1,4 @@
-package org.nftfr.backend.rest.model;
+package org.nftfr.backend.utility;
 
 public class InvalidImageException extends RuntimeException {
     InvalidImageException() {

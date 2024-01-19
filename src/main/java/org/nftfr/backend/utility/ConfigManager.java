@@ -1,4 +1,4 @@
-package org.nftfr.backend;
+package org.nftfr.backend.utility;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

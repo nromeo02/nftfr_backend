@@ -1,4 +1,4 @@
-package org.nftfr.backend;
+package org.nftfr.backend.utility;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;

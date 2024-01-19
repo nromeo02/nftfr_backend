@@ -1,4 +1,4 @@
-package org.nftfr.backend.rest.model;
+package org.nftfr.backend.utility;
 
 import org.springframework.http.HttpStatus;
 
