@@ -120,28 +120,40 @@ public class NftDaoPostgres implements NftDao {
     public List<Nft> findByQuery(Set<String> tokens, double minPrice, double maxPrice, boolean onSale) {
         StringBuilder sql = new StringBuilder();
 
-        // Build sql statement.
-        for (int i = 0; i < tokens.size(); ++i) {
-            if (i != 0)
-                sql.append(" UNION ");
+        if (!tokens.isEmpty()) {
+            // Build sql statement with tokens.
+            for (int i = 0; i < tokens.size(); ++i) {
+                if (i != 0)
+                    sql.append(" UNION ");
 
-            if (onSale) {
-                sql.append("(SELECT n.* FROM nft n, sale s WHERE n.id = s.nft_id AND ((title LIKE ?) OR (caption LIKE ?) OR (tags LIKE ?)) AND (value BETWEEN ? AND ?))");
-            } else {
-                sql.append("(SELECT * FROM nft WHERE ((title LIKE ?) OR (caption LIKE ?) OR (tags LIKE ?)) AND (value BETWEEN ? AND ?))");
+                if (onSale) {
+                    sql.append("(SELECT n.* FROM nft n, sale s WHERE n.id = s.nft_id AND ((title LIKE ?) OR (caption LIKE ?) OR (tags LIKE ?)) AND (value BETWEEN ? AND ?))");
+                } else {
+                    sql.append("(SELECT * FROM nft WHERE ((title LIKE ?) OR (caption LIKE ?) OR (tags LIKE ?)) AND (value BETWEEN ? AND ?))");
+                }
             }
+        } else {
+            // Build sql statement without tokens.
+            sql.append("SELECT n.* FROM nft n, sale s WHERE (value BETWEEN ? AND ?)");
+            if (onSale)
+                sql.append(" AND s.nft_id = n.id");
         }
 
         try (PreparedStatement stmt = connection.prepareStatement(sql.toString())) {
             // Fill in parameters.
-            int i = 1;
-            for (String token : tokens) {
-                String tokenString = "%" + token + "%";
-                stmt.setString(i++, tokenString);
-                stmt.setString(i++, tokenString);
-                stmt.setString(i++, tokenString);
-                stmt.setDouble(i++, minPrice);
-                stmt.setDouble(i++, maxPrice);
+            if (!tokens.isEmpty()) {
+                int i = 1;
+                for (String token : tokens) {
+                    String tokenString = "%" + token + "%";
+                    stmt.setString(i++, tokenString);
+                    stmt.setString(i++, tokenString);
+                    stmt.setString(i++, tokenString);
+                    stmt.setDouble(i++, minPrice);
+                    stmt.setDouble(i++, maxPrice);
+                }
+            } else {
+                stmt.setDouble(1, minPrice);
+                stmt.setDouble(2, maxPrice);
             }
 
             return execListQuery(stmt);
@@ -149,7 +161,5 @@ public class NftDaoPostgres implements NftDao {
             throw new RuntimeException(ex);
         }
     }
-
-
 }
 
