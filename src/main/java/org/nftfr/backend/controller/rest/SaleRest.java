@@ -81,6 +81,16 @@ public class SaleRest {
         saleDao.remove(id);
     }
 
+    @GetMapping("/get/{nftId}")
+    @ResponseStatus(HttpStatus.OK)
+    public Sale get(@PathVariable String nftId) {
+        Sale sale = saleDao.findByNftId(nftId);
+        if (sale == null)
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "Sale not found");
+
+        return sale;
+    }
+
     @PutMapping("/buy/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void buy(@PathVariable Long id, @RequestBody Map<String, String> bodyParams, HttpServletRequest req) {
