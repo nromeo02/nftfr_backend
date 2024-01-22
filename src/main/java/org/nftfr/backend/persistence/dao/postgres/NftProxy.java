@@ -52,7 +52,7 @@ public class NftProxy extends Nft {
 
     @Override
     public User getOwner() {
-        User owner = super.getAuthor();
+        User owner = super.getOwner();
         if (owner == null) {
             final String sql = "SELECT u.* FROM nft n, users u WHERE n.id=? AND n.owner = u.username;";
             try (PreparedStatement stmt = connection.prepareStatement(sql)) {
