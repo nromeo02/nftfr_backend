@@ -158,6 +158,7 @@ public class SaleRest {
         paymentMethodDao.update(buyerPM);
         paymentMethodDao.update(sellerPM);
         nftDao.update(nft);
+        userDao.update(buyer);
         saleDao.remove(id);
         DBManager.getInstance().endTransaction();
     }
