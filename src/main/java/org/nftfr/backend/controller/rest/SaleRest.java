@@ -141,6 +141,8 @@ public class SaleRest {
             } else {
                 buyerPM.setBalance(MoneyConverter.getInstance().convertUsdToEth(buyerBalance - sale.getPrice()));
             }
+        } else {
+            buyerPM.setBalance(buyerBalance - sale.getPrice());
         }
 
         sellerPM.setBalance(sellerPM.getBalance() + sale.getPrice());
