@@ -94,6 +94,7 @@ public class SaleRest {
     @PutMapping("/buy/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void buy(@PathVariable Long id, @RequestBody Map<String, String> bodyParams, HttpServletRequest req) {
+        MoneyConverter moneyConverter = MoneyConverter.getInstance();
         AuthToken authToken = AuthToken.fromRequest(req);
 
         // Find sale.
@@ -137,9 +138,9 @@ public class SaleRest {
         // Transfer money.
         if (buyerPM.getType() != sellerPM.getType()) {
             if (sellerPM.getType() == PaymentMethod.TYPE_ETH) {
-                buyerPM.setBalance(MoneyConverter.getInstance().convertEthToUsd(buyerBalance - sale.getPrice()));
+                buyerPM.setBalance(moneyConverter.convertEthToUsd(buyerBalance - sale.getPrice()));
             } else {
-                buyerPM.setBalance(MoneyConverter.getInstance().convertUsdToEth(buyerBalance - sale.getPrice()));
+                buyerPM.setBalance(moneyConverter.convertUsdToEth(buyerBalance - sale.getPrice()));
             }
         } else {
             buyerPM.setBalance(buyerBalance - sale.getPrice());
@@ -147,7 +148,12 @@ public class SaleRest {
 
         sellerPM.setBalance(sellerPM.getBalance() + sale.getPrice());
 
-        // Transfer ownership.
+        // Update price and transfer ownership.
+        double nftValue = sale.getPrice();
+        if (sellerPM.getType() == PaymentMethod.TYPE_USD)
+            nftValue = moneyConverter.convertUsdToEth(nftValue);
+
+        nft.setValue(nftValue);
         nft.setOwner(buyer);
 
         // Increase buyer rank.
