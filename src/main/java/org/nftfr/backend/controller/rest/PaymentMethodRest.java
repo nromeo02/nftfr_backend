@@ -1,4 +1,5 @@
 package org.nftfr.backend.controller.rest;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.nftfr.backend.persistence.DBManager;
 import org.nftfr.backend.persistence.dao.PaymentMethodDao;
@@ -16,13 +17,12 @@ import java.util.List;
 @RequestMapping("/payment")
 public class PaymentMethodRest {
     private final PaymentMethodDao paymentMethodDao = DBManager.getInstance().getPaymentMethodDao();
-    public record CreateBody(String address, int type){
+    public record CreateBody(String address, int type) {
         public PaymentMethod asPaymentMethod(User user) {
             PaymentMethod paymentMethod = new PaymentMethod();
             paymentMethod.setAddress(address);
             paymentMethod.setUser(user);
             paymentMethod.setType(type);
-//            paymentMethod.setBalance(balance);
             return paymentMethod;
         }
     }

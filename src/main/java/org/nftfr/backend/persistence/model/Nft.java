@@ -1,4 +1,6 @@
 package org.nftfr.backend.persistence.model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.ArrayList;
 
 public class Nft {
@@ -60,12 +62,17 @@ public class Nft {
         this.value = value;
     }
 
+    public ArrayList<String> getTags() {
+        return tags;
+    }
+
     public void setTags(ArrayList<String> inputTags) {
         tags = new ArrayList<>();
         for (String tag : inputTags)
             tags.add(tag.toLowerCase());
     }
 
+    @JsonIgnore
     public String getTagsAsString() {
         return String.join(",", tags);
     }

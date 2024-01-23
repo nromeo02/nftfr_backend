@@ -75,4 +75,25 @@ public class SaleDaoPostgres implements SaleDao {
             throw new RuntimeException(ex);
         }
     }
+
+    @Override
+    public Sale findByNftId(String nftId) {
+        final String sql = "SELECT * FROM sale WHERE nft_id=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, nftId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (!rs.next())
+                return null;
+
+            Sale sale = new SaleProxy(connection);
+            sale.setId(rs.getLong("id"));
+            sale.setPrice(rs.getDouble("price"));
+            sale.setCreationDate(rs.getObject("creation_date", LocalDateTime.class));
+            sale.setEndTime(rs.getObject("end_time", LocalDateTime.class));
+            return sale;
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 }

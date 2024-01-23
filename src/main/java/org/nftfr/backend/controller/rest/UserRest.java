@@ -47,7 +47,7 @@ public class UserRest {
         // Find user.
         User user = userDao.findByUsername(token.username());
         if (user == null)
-            throw new ClientErrorException(HttpStatus.UNAUTHORIZED, "User not found");
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "User not found");
 
         // Verify password.
         if (!user.verifyPassword(token.password()))
