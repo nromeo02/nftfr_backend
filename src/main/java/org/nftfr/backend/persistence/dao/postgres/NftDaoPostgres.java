@@ -75,7 +75,18 @@ public class NftDaoPostgres implements NftDao {
     public void delete(String id) {
         final String sql = "DELETE FROM nft WHERE id=?;";
         try (PreparedStatement stmt = connection.prepareStatement(sql)){
-            stmt.setString(1,id);
+            stmt.setString(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
+    public void clearAllAuthors(String username) {
+        final String sql = "UPDATE nft SET author=NULL WHERE author=?;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, username);
             stmt.executeUpdate();
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
