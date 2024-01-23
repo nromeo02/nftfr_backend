@@ -38,7 +38,7 @@ public class NftDaoPostgres implements NftDao {
 
     @Override
     public void create(Nft nft) {
-        final String sql = "INSERT INTO nft (id, author, owner, caption, title, tags) VALUES (?, ?, ?, ?, ?, ?, ?);";
+        final String sql = "INSERT INTO nft (id, author, owner, caption, title, tags) VALUES (?, ?, ?, ?, ?, ?);";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, nft.getId());
             stmt.setString(2, nft.getAuthor().getUsername());

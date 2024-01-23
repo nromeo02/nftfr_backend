@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Admin Operation</title>
+    <link href="/static/css/nobs.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+    <h1 th:if="${error_msg == null}">Operazione effettuata con successo</h1>
+    <h1 th:if="${error_msg != null}" th:text="'Errore: ' + ${error_msg}"></h1>
+    <button type="submit" onclick="window.location.href='/admin'">Torna alla home</button>
+</body>
+
+</html>

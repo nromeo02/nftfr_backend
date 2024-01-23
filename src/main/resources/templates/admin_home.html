@@ -8,16 +8,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css"
-        integrity="sha384-nU14brUcp6StFntEOOEBvcJm4huWjB0OcIeQ3fltAfSmuZFrkAif0T+UtNGlKKQv" crossorigin="anonymous">
+    <link href="/static/css/bootstrap.rtl.min.css" rel="stylesheet" type="text/css" />
     <title>Admin Home</title>
-    <link href="/static/admin.css" rel="stylesheet" type="text/css" />
+    <link href="/static/css/bs.css" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
     <h1 class="text-center text-white p2 text-uppercase">Pagina Admin</h1>
     <div class="container mt-5"> <!--  -->
-        <table id="tabble" class="table table-responsive table-bordered border-dark table-hover text-center text-capitalize"> <!--  -->
+        <table id="tabble"
+            class="table table-responsive table-bordered border-dark table-hover text-center text-capitalize"> <!--  -->
             <thead class="thead-dark"> <!--  -->
                 <tr class="table-dark table-active text-uppercase text-white"> <!--  -->
                     <th>ID Segnalazione</th>
@@ -82,7 +82,8 @@
                 <tr>
                     <td>ciato</td>
                     <td>ciao</td>
-                </tr>                <tr>
+                </tr>
+                <tr>
                     <td>ciato</td>
                     <td>ciao</td>
                 </tr>
@@ -127,17 +128,18 @@
     <div id="deleteSale">
         <!-- Form per cancellare Sale -->
         <form action="/admin/delete/sale" method="post">
-            <label for="saleId">ID Sale:</label>
-            <input type="text" id="saleId" name="saleId" required>
+            <label for="saleNftId">ID NFT:</label>
+            <input type="text" id="saleNftId" name="saleNftId" required>
             <button type="submit" class="actionButton">Cancella Sale</button>
         </form>
     </div>
-        <div id="logout">
-            <form action="/admin/logout" method="get">
-                <label th:text="${username}" ></label>
-                <button type="submit" class="actionButton">Logout</button>
-            </form>
+    <div id="logout">
+        <form action="/admin/logout" method="get">
+            <label th:text="${username}"></label>
+            <button type="submit" class="actionButton">Logout</button>
+        </form>
     </div>
 
 </body>
+
 </html>
