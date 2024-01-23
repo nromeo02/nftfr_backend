@@ -1,6 +1,5 @@
 package org.nftfr.backend.persistence.dao.postgres;
 
-import org.nftfr.backend.persistence.SaleIdBroker;
 import org.nftfr.backend.persistence.dao.SaleDao;
 import org.nftfr.backend.persistence.model.Sale;
 
@@ -19,14 +18,13 @@ public class SaleDaoPostgres implements SaleDao {
 
     @Override
     public void add(Sale sale) {
-        final String sql = "INSERT INTO sale (id, nft_id, destination_address, price, creation_date, end_time) VALUES (?, ?, ?, ?, ?, ?);";
+        final String sql = "INSERT INTO sale (nft_id, destination_address, price, creation_date, end_time) VALUES (?, ?, ?, ?, ?);";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setLong(1, SaleIdBroker.getId(connection));
-            stmt.setString(2, sale.getNft().getId());
-            stmt.setString(3, sale.getPaymentMethod().getAddress());
-            stmt.setDouble(4, sale.getPrice());
-            stmt.setObject(5, sale.getCreationDate());
-            stmt.setObject(6, sale.getEndTime());
+            stmt.setString(1, sale.getNft().getId());
+            stmt.setString(2, sale.getPaymentMethod().getAddress());
+            stmt.setDouble(3, sale.getPrice());
+            stmt.setObject(4, sale.getCreationDate());
+            stmt.setObject(5, sale.getEndTime());
             stmt.executeUpdate();
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
@@ -34,10 +32,10 @@ public class SaleDaoPostgres implements SaleDao {
     }
 
     @Override
-    public void remove(Long id) {
-        final String sql = "DELETE FROM sale WHERE id=?;";
+    public void remove(String nftId) {
+        final String sql = "DELETE FROM sale WHERE nft_id=?;";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setLong(1, id);
+            stmt.setString(1, nftId);
             stmt.executeUpdate();
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
@@ -56,27 +54,6 @@ public class SaleDaoPostgres implements SaleDao {
     }
 
     @Override
-    public Sale findById(Long id) {
-        final String sql = "SELECT * FROM sale WHERE id=?;";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setLong(1, id);
-            ResultSet rs = stmt.executeQuery();
-
-            if (!rs.next())
-                return null;
-
-            Sale sale = new SaleProxy(connection);
-            sale.setId(rs.getLong("id"));
-            sale.setPrice(rs.getDouble("price"));
-            sale.setCreationDate(rs.getObject("creation_date", LocalDateTime.class));
-            sale.setEndTime(rs.getObject("end_time", LocalDateTime.class));
-            return sale;
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    @Override
     public Sale findByNftId(String nftId) {
         final String sql = "SELECT * FROM sale WHERE nft_id=?;";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -86,8 +63,7 @@ public class SaleDaoPostgres implements SaleDao {
             if (!rs.next())
                 return null;
 
-            Sale sale = new SaleProxy(connection);
-            sale.setId(rs.getLong("id"));
+            Sale sale = new SaleProxy(connection, rs.getString("nft_id"));
             sale.setPrice(rs.getDouble("price"));
             sale.setCreationDate(rs.getObject("creation_date", LocalDateTime.class));
             sale.setEndTime(rs.getObject("end_time", LocalDateTime.class));

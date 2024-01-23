@@ -3,22 +3,13 @@ package org.nftfr.backend.persistence.model;
 import java.time.LocalDateTime;
 
 public class Sale {
-    private Long id;
     private Nft nft;
     private PaymentMethod paymentMethod;
     private double price;
     private LocalDateTime creationDate;
-    private LocalDateTime endTime = null;
+    private LocalDateTime endTime;
 
     public Sale() {}
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public Nft getNft() {
         return nft;

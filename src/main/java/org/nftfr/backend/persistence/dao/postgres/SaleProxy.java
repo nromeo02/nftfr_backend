@@ -11,9 +11,11 @@ import java.sql.SQLException;
 
 public class SaleProxy extends Sale {
     private final Connection connection;
+    private final String nftId;
 
-    public SaleProxy(Connection connection) {
+    public SaleProxy(Connection connection, String nftId) {
         this.connection = connection;
+        this.nftId = nftId;
     }
 
     @Override
@@ -21,9 +23,9 @@ public class SaleProxy extends Sale {
         Nft nft = super.getNft();
 
         if (nft == null) {
-            final String sql = "SELECT n.* FROM nft n, sale s WHERE s.id=? AND n.id = s.nft_id;";
+            final String sql = "SELECT n.* FROM nft n, sale s WHERE s.nft_id=? AND n.id = s.nft_id;";
             try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-                stmt.setLong(1, getId());
+                stmt.setString(1, nftId);
                 ResultSet rs = stmt.executeQuery();
 
                 if (rs.next()) {
@@ -48,9 +50,9 @@ public class SaleProxy extends Sale {
         PaymentMethod paymentMethod = super.getPaymentMethod();
 
         if (paymentMethod == null) {
-            final String sql = "SELECT pm.* FROM payment_methods pm, sale s WHERE s.id=? AND pm.address = s.destination_address;";
+            final String sql = "SELECT pm.* FROM payment_methods pm, sale s WHERE s.nft_id=? AND pm.address = s.destination_address;";
             try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-                stmt.setLong(1, getId());
+                stmt.setString(1, nftId);
                 ResultSet rs = stmt.executeQuery();
 
                 if (rs.next()) {
