@@ -21,11 +21,11 @@ import java.util.*;
 @CrossOrigin(value = "http://localhost:4200", allowCredentials = "true")
 @RequestMapping("/nft")
 public class NftRest {
-    private final  NftDao nftDao = DBManager.getInstance().getNftDao();
+    private final NftDao nftDao = DBManager.getInstance().getNftDao();
     private final ReportDao reportDao = DBManager.getInstance().getReportDao();
 
     public record CreateBody(String caption, String title, ArrayList<String> tags, String data) {
-        public Nft asNft(User user, NftImage image){
+        public Nft asNft(User user, NftImage image) {
             Nft nft = new Nft();
             nft.setCaption(caption);
             nft.setTitle(title);
@@ -37,9 +37,12 @@ public class NftRest {
         }
     }
 
-    public record UpdateBody(String title, String caption, Double value, ArrayList<String> tags) {}
+    public record UpdateBody(String title, String caption, Double value, ArrayList<String> tags) {
+    }
 
-    public record FindBody(String owner, String author, String query, Double minPrice, Double maxPrice, Boolean onSale) {}
+    public record FindBody(String owner, String author, String query, Double minPrice, Double maxPrice,
+                           Boolean onSale) {
+    }
 
     @PutMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
@@ -160,7 +163,7 @@ public class NftRest {
 
     @PutMapping("/report/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void report(@PathVariable String id, HttpServletRequest req) {
+    public void report(@PathVariable String id, HttpServletRequest req, @RequestBody String message) {
         AuthToken authToken = AuthToken.fromRequest(req);
         User user = DBManager.getInstance().getUserDao().findByUsername(authToken.username());
         if (user == null)
@@ -168,7 +171,11 @@ public class NftRest {
 
         if (nftDao.findById(id) == null)
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "NFT not found");
-
-        reportDao.createOrUpdateReport(id);
+//check
+        if (message != null) {
+            reportDao.createOrUpdateReport(id, message);
+        } else {
+            reportDao.createOrUpdateReport(id, null);
+        }
     }
 }

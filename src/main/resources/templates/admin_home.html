@@ -22,6 +22,7 @@
                 <tr class="table-dark table-active text-uppercase text-white"> <!--  -->
                     <th>ID Segnalazione</th>
                     <th>Counter</th>
+                    <th>Comment</th>
                 </tr>
             </thead>
             <tbody>
@@ -31,80 +32,12 @@
                     </td>
                     <td th:text="${report.counter}"></td>
                 </tr>
-                <tr>
-                    <td>ciato</td>
-                    <td>ciao</td>
-                </tr>
-                <tr>
-                    <td>ciato</td>
-                    <td>ciao</td>
-                </tr>
-                <tr>
-                    <td>ciato</td>
-                    <td>ciao</td>
-                </tr>
-                <tr>
-                    <td>ciato</td>
-                    <td>ciao</td>
-                </tr>
-                <tr>
-                    <td>ciato</td>
-                    <td>ciao</td>
-                </tr>
-                <tr>
-                    <td>ciato</td>
-                    <td>ciao</td>
-                </tr>
-                <tr>
-                    <td>ciato</td>
-                    <td>ciao</td>
-                </tr>
-                <tr>
-                    <td>ciato</td>
-                    <td>ciao</td>
-                </tr>
-                <tr>
-                    <td>ciato</td>
-                    <td>ciao</td>
-                </tr>
-                <tr>
-                    <td>ciato</td>
-                    <td>ciao</td>
-                </tr>
-                <tr>
-                    <td>ciato</td>
-                    <td>ciao</td>
-                </tr>
-                <tr>
-                    <td>ciato</td>
-                    <td>ciao</td>
-                </tr>
-                <tr>
-                    <td>ciato</td>
-                    <td>ciao</td>
-                </tr>                <tr>
-                    <td>ciato</td>
-                    <td>ciao</td>
-                </tr>
-                <tr>
-                    <td>ciato</td>
-                    <td>ciao</td>
-                </tr>
-                <tr>
-                    <td>ciato</td>
-                    <td>ciao</td>
-                </tr>
-                <tr>
-                    <td>ciato</td>
-                    <td>ciao666</td>
-                </tr>
-
             </tbody>
         </table>
     </div>
 
     <!-- da allinera in basso a sinistra -->
-    <div id="deleteUser">
+    <div id="deleteUser" class="responsive">
         <!-- Form per cancellare utente -->
         <form action="/admin/delete/user" method="post">
             <label for="username">Username:</label>
@@ -114,7 +47,7 @@
     </div>
 
     <!--da allineare al centro in basso -->
-    <div id="deleteNft">
+    <div id="deleteNft" class="responsive">
         <!-- Form per cancellare NFT -->
         <form action="/admin/delete/nft" method="post">
             <label for="nftId">ID NFT:</label>
@@ -124,7 +57,7 @@
     </div>
 
     <!-- da allineare in basso a destra -->
-    <div id="deleteSale">
+    <div id="deleteSale" class="responsive">
         <!-- Form per cancellare Sale -->
         <form action="/admin/delete/sale" method="post">
             <label for="saleId">ID Sale:</label>
@@ -132,7 +65,7 @@
             <button type="submit" class="actionButton">Cancella Sale</button>
         </form>
     </div>
-        <div id="logout">
+        <div id="logout" class="responsive">
             <form action="/admin/logout" method="get">
                 <label th:text="${username}" ></label>
                 <button type="submit" class="actionButton">Logout</button>

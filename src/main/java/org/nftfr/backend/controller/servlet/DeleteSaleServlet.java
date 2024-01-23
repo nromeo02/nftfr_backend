@@ -17,8 +17,13 @@ public class DeleteSaleServlet extends HttpServlet {
             res.sendRedirect("/admin/login");
             return;
         }
+        //check
         final Long saleId = Long.parseLong(req.getParameter("saleId"));
-        saleDao.remove(saleId);
+
+        saleDao.remove((String.valueOf(saleId)));
+
+        //end check
+
         res.sendRedirect("/admin");
     }
 }

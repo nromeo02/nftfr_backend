@@ -1,6 +1,6 @@
 {
   "dbPort": "5432",
-  "dbName": "nftfr_public",
+  "dbName": "nftfr",
   "dbUsername": "postgres",
   "dbPassword": "angelogay",
   "jwtSecret": "odAh38us0qj7coVBSfrvAEyKxJ2ecgqa8oPAPwvZi/c=",
