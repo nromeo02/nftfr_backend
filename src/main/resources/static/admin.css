@@ -1,8 +1,16 @@
+#table {
+    max-height: 30vh; /* Imposta l'altezza massima desiderata */
+    overflow-y: auto; /* Aggiungi la barra di scorrimento verticale se necessario */
+    border-collapse: collapse;
+    width: 100%;
+}
 body {
     background-color: #00aff0;
     color: white;
     text-align: center;
     margin-top: 50px;
+    max-height: 100vh; /* Imposta l'altezza massima della pagina al 100% della viewport height */
+    overflow: hidden; /* Disabilita lo scrolling sulla pagina */
 }
 
 #deleteUser {
