@@ -24,12 +24,11 @@ public class NftRest {
     private final  NftDao nftDao = DBManager.getInstance().getNftDao();
     private final ReportDao reportDao = DBManager.getInstance().getReportDao();
 
-    public record CreateBody(String caption, String title, Double value, ArrayList<String> tags, String data) {
+    public record CreateBody(String caption, String title, ArrayList<String> tags, String data) {
         public Nft asNft(User user, NftImage image){
             Nft nft = new Nft();
             nft.setCaption(caption);
             nft.setTitle(title);
-            nft.setValue(value);
             nft.setTags(tags);
             nft.setAuthor(user);
             nft.setOwner(user);
