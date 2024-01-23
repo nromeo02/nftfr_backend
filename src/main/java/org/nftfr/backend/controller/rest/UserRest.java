@@ -2,6 +2,7 @@ package org.nftfr.backend.controller.rest;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.nftfr.backend.persistence.DBManager;
+import org.nftfr.backend.persistence.dao.NftDao;
 import org.nftfr.backend.persistence.dao.UserDao;
 import org.nftfr.backend.persistence.model.User;
 import org.nftfr.backend.utility.AuthToken;
@@ -78,10 +79,15 @@ public class UserRest {
         if (user == null)
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "User not found");
 
-        // Remove all payment methods and nfts for this user, then remove the user.
-        // TODO: handle NFT removal (it will not work for now if the user owns any NFT).
+        // Block deletion if this user has any NFT.
+        NftDao nftDao = DBManager.getInstance().getNftDao();
+        if (!nftDao.findByOwner(authToken.username()).isEmpty())
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "This user is a NFT owner and cannot be removed");
+
+        // Remove all payment methods and nullify all nfts author fields, then remove the user.
         DBManager.getInstance().beginTransaction();
         DBManager.getInstance().getPaymentMethodDao().deleteByUsername(authToken.username());
+        nftDao.clearAllAuthors(authToken.username());
         userDao.delete(authToken.username());
         DBManager.getInstance().endTransaction();
     }

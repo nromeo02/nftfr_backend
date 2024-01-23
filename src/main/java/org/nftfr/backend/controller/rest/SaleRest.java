@@ -66,11 +66,11 @@ public class SaleRest {
         saleDao.add(bodyParams.asSale(nft, paymentMethod));
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/delete/{nftId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id, HttpServletRequest req) {
+    public void delete(@PathVariable String nftId, HttpServletRequest req) {
         AuthToken authToken = AuthToken.fromRequest(req);
-        Sale sale = saleDao.findById(id);
+        Sale sale = saleDao.findByNftId(nftId);
         if (sale == null)
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "Sale not found");
 
@@ -78,7 +78,7 @@ public class SaleRest {
         if (!sale.getNft().getOwner().getUsername().equals(authToken.username()))
             throw new ClientErrorException(HttpStatus.FORBIDDEN, "You don't have the permissions for this action");
 
-        saleDao.remove(id);
+        saleDao.remove(nftId);
     }
 
     @GetMapping("/get/{nftId}")
@@ -91,14 +91,14 @@ public class SaleRest {
         return sale;
     }
 
-    @PutMapping("/buy/{id}")
+    @PutMapping("/buy/{nftId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void buy(@PathVariable Long id, @RequestBody Map<String, String> bodyParams, HttpServletRequest req) {
+    public void buy(@PathVariable String nftId, @RequestBody Map<String, String> bodyParams, HttpServletRequest req) {
         MoneyConverter moneyConverter = MoneyConverter.getInstance();
         AuthToken authToken = AuthToken.fromRequest(req);
 
         // Find sale.
-        Sale sale = saleDao.findById(id);
+        Sale sale = saleDao.findByNftId(nftId);
         if (sale == null)
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "Sale not found");
 
@@ -148,7 +148,7 @@ public class SaleRest {
 
         sellerPM.setBalance(sellerPM.getBalance() + sale.getPrice());
 
-        // Update price and transfer ownership.
+        // Update value and transfer ownership.
         double nftValue = sale.getPrice();
         if (sellerPM.getType() == PaymentMethod.TYPE_USD)
             nftValue = moneyConverter.convertUsdToEth(nftValue);
@@ -165,7 +165,7 @@ public class SaleRest {
         paymentMethodDao.update(sellerPM);
         nftDao.update(nft);
         userDao.update(buyer);
-        saleDao.remove(id);
+        saleDao.remove(nftId);
         DBManager.getInstance().endTransaction();
     }
 }

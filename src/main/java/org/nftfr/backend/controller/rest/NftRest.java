@@ -92,6 +92,7 @@ public class NftRest {
         nftDao.update(nft);
     }
 
+    // TODO: move logic to servlet.
     @DeleteMapping(value = "/delete/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable String id, HttpServletRequest req) {
