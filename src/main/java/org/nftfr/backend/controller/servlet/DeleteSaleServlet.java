@@ -1,4 +1,5 @@
 package org.nftfr.backend.controller.servlet;
+
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -11,6 +12,7 @@ import org.nftfr.backend.persistence.dao.SaleDao;
 import org.nftfr.backend.persistence.model.Sale;
 
 import java.io.IOException;
+
 @WebServlet("/admin/delete/sale")
 public class DeleteSaleServlet extends HttpServlet {
     private final SaleDao saleDao = DBManager.getInstance().getSaleDao();

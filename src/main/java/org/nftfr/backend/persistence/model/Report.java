@@ -4,6 +4,8 @@ public class Report {
     private String nftId;
     private int counter;
 
+    private String comment;
+
     public Report() {}
 
     public String getNftId() {
@@ -20,5 +22,13 @@ public class Report {
 
     public void setCounter(int counter) {
         this.counter = counter;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }
