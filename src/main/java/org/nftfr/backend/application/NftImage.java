@@ -1,4 +1,4 @@
-package org.nftfr.backend.utility;
+package org.nftfr.backend.application;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

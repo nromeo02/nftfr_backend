@@ -10,8 +10,6 @@ import org.nftfr.backend.persistence.DBManager;
 import org.nftfr.backend.persistence.dao.NftDao;
 import org.nftfr.backend.persistence.dao.UserDao;
 import org.nftfr.backend.persistence.model.User;
-import org.nftfr.backend.utility.ClientErrorException;
-import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 @WebServlet("/admin/delete/user")
