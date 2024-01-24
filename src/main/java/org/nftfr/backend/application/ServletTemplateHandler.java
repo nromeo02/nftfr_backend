@@ -1,4 +1,4 @@
-package org.nftfr.backend.utility;
+package org.nftfr.backend.application;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
-public class ServletUtil {
+public class ServletTemplateHandler {
     @RequestMapping(value = "/views/**", method = {RequestMethod.GET, RequestMethod.POST})
     public String templateHandler(HttpServletRequest request) {
         String resource = request.getRequestURI().substring("/views/".length());

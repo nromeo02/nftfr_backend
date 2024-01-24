@@ -1,5 +1,6 @@
-package org.nftfr.backend.utility;
+package org.nftfr.backend.application;
 
+import org.nftfr.backend.application.ClientErrorException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;

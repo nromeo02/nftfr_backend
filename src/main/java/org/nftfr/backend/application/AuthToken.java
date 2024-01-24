@@ -1,4 +1,4 @@
-package org.nftfr.backend.utility;
+package org.nftfr.backend.application;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.jsonwebtoken.Claims;

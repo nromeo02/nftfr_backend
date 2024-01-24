@@ -1,6 +1,6 @@
 package org.nftfr.backend.persistence;
 
-import org.nftfr.backend.utility.ConfigManager;
+import org.nftfr.backend.application.ConfigManager;
 import org.nftfr.backend.persistence.dao.*;
 import org.nftfr.backend.persistence.dao.postgres.*;
 

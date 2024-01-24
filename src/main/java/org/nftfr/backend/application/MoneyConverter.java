@@ -1,4 +1,4 @@
-package org.nftfr.backend.utility;
+package org.nftfr.backend.application;
 
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
