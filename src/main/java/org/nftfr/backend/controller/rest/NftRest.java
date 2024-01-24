@@ -138,7 +138,7 @@ public class NftRest {
 
     @PutMapping("/report/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void report(@PathVariable String id, HttpServletRequest req, @RequestBody String message) {
+    public void report(@PathVariable String id, HttpServletRequest req, @RequestBody Map<String, String> reportData) {
         AuthToken authToken = AuthToken.fromRequest(req);
         User user = DBManager.getInstance().getUserDao().findByUsername(authToken.username());
         if (user == null)
@@ -146,11 +146,6 @@ public class NftRest {
 
         if (nftDao.findById(id) == null)
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "NFT not found");
-//check
-        if (message != null) {
-            reportDao.createOrUpdateReport(id, message);
-        } else {
-            reportDao.createOrUpdateReport(id, null);
-        }
+        reportDao.createOrUpdateReport(id, reportData.get("comment"));
     }
 }
