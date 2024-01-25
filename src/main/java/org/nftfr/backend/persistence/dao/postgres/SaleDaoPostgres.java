@@ -99,6 +99,23 @@ public class SaleDaoPostgres implements SaleDao {
     }
 
     @Override
+    public List<Sale> getAllSales() {
+        final String sql = "SELECT * FROM sale WHERE end_time IS NULL;";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+
+            ArrayList<Sale> sales = new ArrayList<>();
+            while (rs.next()) {
+                sales.add(makeRSSale(rs));
+            }
+
+            return sales;
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
     public List<Sale> getAllAuctions() {
         final String sql = "SELECT * FROM sale WHERE end_time IS NOT NULL;";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {

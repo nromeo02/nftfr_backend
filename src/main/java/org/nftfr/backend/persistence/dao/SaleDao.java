@@ -10,5 +10,6 @@ public interface SaleDao {
     void remove(String nftId);
     void removeByNftId(String nftId);
     Sale findByNftId(String nftId);
+    List<Sale> getAllSales();
     List<Sale> getAllAuctions();
 }
