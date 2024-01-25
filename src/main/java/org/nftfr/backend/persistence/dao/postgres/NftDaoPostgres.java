@@ -127,7 +127,7 @@ public class NftDaoPostgres implements NftDao {
     }
 
     @Override
-    public List<Nft> findByQuery(Set<String> tokens, double minPrice, double maxPrice, boolean onSale) {
+    public List<Nft> findByQuery(Set<String> tokens, double minPrice, double maxPrice, int skip, int take) {
         StringBuilder sql = new StringBuilder();
 
         if (!tokens.isEmpty()) {
@@ -136,18 +136,14 @@ public class NftDaoPostgres implements NftDao {
                 if (i != 0)
                     sql.append(" UNION ");
 
-                if (onSale) {
-                    sql.append("(SELECT n.* FROM nft n, sale s WHERE n.id = s.nft_id AND ((title LIKE ?) OR (caption LIKE ?) OR (tags LIKE ?)) AND (value BETWEEN ? AND ?))");
-                } else {
-                    sql.append("(SELECT * FROM nft WHERE ((title LIKE ?) OR (caption LIKE ?) OR (tags LIKE ?)) AND (value BETWEEN ? AND ?))");
-                }
+                sql.append("(SELECT * FROM nft WHERE ((title LIKE ?) OR (caption LIKE ?) OR (tags LIKE ?)) AND (value BETWEEN ? AND ?))");
             }
         } else {
             // Build sql statement without tokens.
             sql.append("SELECT n.* FROM nft n, sale s WHERE (value BETWEEN ? AND ?)");
-            if (onSale)
-                sql.append(" AND s.nft_id = n.id");
         }
+
+        sql.append(" OFFSET ? LIMIT ?;");
 
         try (PreparedStatement stmt = connection.prepareStatement(sql.toString())) {
             // Fill in parameters.
@@ -160,10 +156,14 @@ public class NftDaoPostgres implements NftDao {
                     stmt.setString(i++, tokenString);
                     stmt.setDouble(i++, minPrice);
                     stmt.setDouble(i++, maxPrice);
+                    stmt.setInt(i++, skip);
+                    stmt.setInt(i++, take);
                 }
             } else {
                 stmt.setDouble(1, minPrice);
                 stmt.setDouble(2, maxPrice);
+                stmt.setInt(3, skip);
+                stmt.setInt(4, take);
             }
 
             return execListQuery(stmt);

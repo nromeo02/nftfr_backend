@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -82,6 +83,18 @@ public class SaleRest {
         saleDao.remove(nftId);
     }
 
+    @GetMapping("/get/sales")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Sale> getSales() {
+        return saleDao.getAllSales();
+    }
+
+    @GetMapping("/get/auctions")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Sale> getAuctions() {
+        return saleDao.getAllAuctions();
+    }
+
     @GetMapping("/get/{nftId}")
     @ResponseStatus(HttpStatus.OK)
     public Sale get(@PathVariable String nftId) {
@@ -91,6 +104,7 @@ public class SaleRest {
 
         return sale;
     }
+
     @GetMapping("/offer/{nftId}")
     @ResponseStatus(HttpStatus.OK)
     public void makeAnOffer(@PathVariable String nftId, HttpServletRequest req, @RequestBody Map<String, String> bodyParams) {

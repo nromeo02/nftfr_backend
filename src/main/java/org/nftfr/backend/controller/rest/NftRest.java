@@ -40,7 +40,7 @@ public class NftRest {
     public record UpdateBody(String title, String caption, ArrayList<String> tags) {}
 
     public record FindBody(String owner, String author, String query, Double minPrice, Double maxPrice,
-                           Boolean onSale) {
+                           Integer skip, Integer take) {
     }
 
     @PutMapping("/create")
@@ -107,13 +107,14 @@ public class NftRest {
         // Filter by other parameters.
         double minPrice = bodyParams.minPrice() != null ? bodyParams.minPrice() : 0.0;
         double maxPrice = bodyParams.maxPrice() != null ? bodyParams.maxPrice() : Double.MAX_VALUE;
-        boolean onSale = bodyParams.onSale() != null ? bodyParams.onSale() : false;
+        int skip = bodyParams.skip() != null ? bodyParams.skip() : 0;
+        int take = bodyParams.take() != null ? bodyParams.take() : 10;
 
         HashSet<String> queryTokens = new HashSet<>();
         if (bodyParams.query() != null)
             queryTokens.addAll(Arrays.asList(bodyParams.query().split(" ")));
 
-        return nftDao.findByQuery(queryTokens, minPrice, maxPrice, onSale);
+        return nftDao.findByQuery(queryTokens, minPrice, maxPrice, skip, take);
     }
 
     @GetMapping("/get/{id}")
