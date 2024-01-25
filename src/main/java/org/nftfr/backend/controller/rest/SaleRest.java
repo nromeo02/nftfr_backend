@@ -11,8 +11,8 @@ import org.nftfr.backend.persistence.model.PaymentMethod;
 import org.nftfr.backend.persistence.model.Sale;
 import org.nftfr.backend.persistence.model.Nft;
 import org.nftfr.backend.persistence.model.User;
-import org.nftfr.backend.application.AuthToken;
-import org.nftfr.backend.application.ClientErrorException;
+import org.nftfr.backend.application.auth.AuthToken;
+import org.nftfr.backend.application.http.ClientErrorException;
 import org.nftfr.backend.application.MoneyConverter;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -166,9 +166,9 @@ public class SaleRest {
             paymentMethodDao.update(sellerPM);
             saleDao.update(sale);
             DBManager.getInstance().endTransaction();
-
+            
             //chiamare pushUpdate in real time manager
-            RealTimeService.pushUpdate(nftId, offer);
+            RealTimeService.pushNewOffer(nftId, offer);
         }
     }
     @PutMapping("/buy/{nftId}")

@@ -13,7 +13,7 @@ public class RTRestTest {
 
     @GetMapping("/test")
     public SseEmitter test() {
-        SseEmitter emitter = new SseEmitter(5 * 1000L);
+        SseEmitter emitter = new SseEmitter(60 * 1000L);
         RealTimeService.registerEmitter("test_id", emitter);
         return emitter;
     }
@@ -22,6 +22,6 @@ public class RTRestTest {
     @ResponseStatus(HttpStatus.OK)
     public void test2() {
         myInt += 10.0;
-        RealTimeService.pushUpdate("test_id", myInt);
+        RealTimeService.pushNewOffer("test_id", myInt);
     }
 }

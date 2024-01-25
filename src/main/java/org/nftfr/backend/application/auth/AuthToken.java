@@ -1,4 +1,4 @@
-package org.nftfr.backend.application;
+package org.nftfr.backend.application.auth;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.jsonwebtoken.Claims;
@@ -6,6 +6,8 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
+import org.nftfr.backend.application.http.ClientErrorException;
+import org.nftfr.backend.application.ConfigManager;
 import org.nftfr.backend.persistence.model.User;
 import org.springframework.http.HttpStatus;
 

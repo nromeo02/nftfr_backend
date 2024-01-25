@@ -1,4 +1,4 @@
-package org.nftfr.backend.application;
+package org.nftfr.backend.application.http;
 
 import org.springframework.http.HttpStatus;
 
