@@ -4,11 +4,12 @@ import java.time.LocalDateTime;
 
 public class Sale {
     private Nft nft;
-    private PaymentMethod paymentMethod;
+    private PaymentMethod sellerPaymentMethod;
     private double price;
     private LocalDateTime creationDate;
     private LocalDateTime endTime;
     private String offerMaker;
+    private PaymentMethod buyerPaymentMethod;
 
     public Sale() {}
 
@@ -20,12 +21,12 @@ public class Sale {
         this.nft = nft;
     }
 
-    public PaymentMethod getPaymentMethod() {
-        return paymentMethod;
+    public PaymentMethod getSellerPaymentMethod() {
+        return sellerPaymentMethod;
     }
 
-    public void setPaymentMethod(PaymentMethod paymentMethod) {
-        this.paymentMethod = paymentMethod;
+    public void setSellerPaymentMethod(PaymentMethod sellerPaymentMethod) {
+        this.sellerPaymentMethod = sellerPaymentMethod;
     }
 
     public double getPrice() {
@@ -58,5 +59,13 @@ public class Sale {
 
     public void setOfferMaker(String offerMaker) {
         this.offerMaker = offerMaker;
+    }
+
+    public PaymentMethod getBuyerPaymentMethod() {
+        return buyerPaymentMethod;
+    }
+
+    public void setBuyerPaymentMethod(PaymentMethod buyerPaymentMethod) {
+        this.buyerPaymentMethod = buyerPaymentMethod;
     }
 }
