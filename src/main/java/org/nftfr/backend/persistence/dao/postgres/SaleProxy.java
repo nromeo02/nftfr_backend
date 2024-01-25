@@ -50,7 +50,7 @@ public class SaleProxy extends Sale {
         PaymentMethod paymentMethod = super.getSellerPaymentMethod();
 
         if (paymentMethod == null) {
-            final String sql = "SELECT pm.* FROM payment_methods pm, sale s WHERE s.nft_id=? AND pm.address = s.destination_address;";
+            final String sql = "SELECT pm.* FROM payment_methods pm, sale s WHERE s.nft_id=? AND pm.address = s.seller_address;";
             try (PreparedStatement stmt = connection.prepareStatement(sql)) {
                 stmt.setString(1, nftId);
                 ResultSet rs = stmt.executeQuery();
@@ -75,7 +75,7 @@ public class SaleProxy extends Sale {
         PaymentMethod paymentMethod = super.getBuyerPaymentMethod();
 
         if (paymentMethod == null) {
-            final String sql = "SELECT pm.* FROM payment_methods pm, sale s WHERE s.nft_id=? AND pm.address = s.destination_address;";
+            final String sql = "SELECT pm.* FROM payment_methods pm, sale s WHERE s.nft_id=? AND pm.address = s.buyer_address;";
             try (PreparedStatement stmt = connection.prepareStatement(sql)) {
                 stmt.setString(1, nftId);
                 ResultSet rs = stmt.executeQuery();
