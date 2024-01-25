@@ -60,4 +60,5 @@ public class RealTimeService {
             update = auctionUpdates.poll();
         }
     }
+    //fare metodo per end
 }

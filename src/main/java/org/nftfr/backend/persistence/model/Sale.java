@@ -8,6 +8,7 @@ public class Sale {
     private double price;
     private LocalDateTime creationDate;
     private LocalDateTime endTime;
+    private String offerMaker;
 
     public Sale() {}
 
@@ -49,5 +50,13 @@ public class Sale {
 
     public void setEndTime(LocalDateTime endTime) {
         this.endTime = endTime;
+    }
+
+    public String getOfferMaker() {
+        return offerMaker;
+    }
+
+    public void setOfferMaker(String offerMaker) {
+        this.offerMaker = offerMaker;
     }
 }

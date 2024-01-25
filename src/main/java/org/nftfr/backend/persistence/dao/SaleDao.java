@@ -7,4 +7,5 @@ public interface SaleDao {
     void remove(String nftId);
     void removeByNftId(String nftId);
     Sale findByNftId(String nftId);
+    void update (Sale sale);
 }

@@ -2,6 +2,7 @@ package org.nftfr.backend.persistence.dao.postgres;
 
 import org.nftfr.backend.persistence.dao.SaleDao;
 import org.nftfr.backend.persistence.model.Sale;
+import org.nftfr.backend.persistence.model.User;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -70,6 +71,19 @@ public class SaleDaoPostgres implements SaleDao {
             return sale;
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
+    public void update(Sale sale) {
+        final String sql = "UPDATE sale SET destination_address=?, price=?, offer_maker=? WHERE nft_id=?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, String.valueOf(sale.getPaymentMethod()));
+            stmt.setDouble(2, sale.getPrice());
+            stmt.setString(3, sale.getOfferMaker());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }
