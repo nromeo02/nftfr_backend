@@ -218,7 +218,7 @@ public class SaleRest {
 
         // Convert money if required.
         double buyerBalance = buyerPM.getBalance();
-        PaymentMethod sellerPM = sale.getSellerPaymentMethod();
+        PaymentMethod sellerPM = sale.getSellerPaymentMethod();     /* questo non cambia mai, è il payment di chi ha creato l'asta */
         if (buyerPM.getType() != sellerPM.getType()) {
             if (sellerPM.getType() == PaymentMethod.TYPE_ETH) {
                 buyerBalance = MoneyConverter.getInstance().convertUsdToEth(buyerBalance);
