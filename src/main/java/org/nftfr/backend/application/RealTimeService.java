@@ -1,6 +1,7 @@
 package org.nftfr.backend.application;
 
 import org.nftfr.backend.persistence.DBManager;
+import org.nftfr.backend.persistence.dao.NftDao;
 import org.nftfr.backend.persistence.dao.SaleDao;
 import org.nftfr.backend.persistence.model.Sale;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,6 +21,7 @@ public class RealTimeService {
     private record AuctionUpdate(String event, String nftId, Double value) {}
     static private final ConcurrentHashMap<String, CopyOnWriteArrayList<SseEmitter>> auctionEmitters = new ConcurrentHashMap<>();
     static private final ConcurrentLinkedQueue<AuctionOffer> auctionOffers = new ConcurrentLinkedQueue<>();
+    private final NftDao nftDao = DBManager.getInstance().getNftDao();
 
     private static void sendNewOfferToAll(AuctionOffer auctionOffer) {
         List<SseEmitter> emitters = auctionEmitters.get(auctionOffer.nftId());

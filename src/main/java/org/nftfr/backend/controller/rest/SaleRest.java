@@ -99,9 +99,9 @@ public class SaleRest {
         if (sale == null) {
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "Sale not found");
         }
+        //verifica che l'asta non sia finita
         LocalDateTime now = LocalDateTime.now();
         if (now.isAfter(sale.getEndTime())) {
-            //gestire il redirect qui ????
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "Auction has ended");
         } else {
             MoneyConverter moneyConverter = MoneyConverter.getInstance();
@@ -128,7 +128,7 @@ public class SaleRest {
 
             //convertire il denaro se serve
             double offer = Double.parseDouble(bodyParams.get("offer"));
-            PaymentMethod sellerPM = sale.getSellerPaymentMethod();
+            PaymentMethod sellerPM = sale.getSellerPaymentMethod();       /* questo non deve cambiare mai, è il payment method di chi ha creato l'asta */
             if (buyerPM.getType() != sellerPM.getType()) {
                 if (sellerPM.getType() == PaymentMethod.TYPE_ETH) {
                     offer = MoneyConverter.getInstance().convertUsdToEth(offer);
@@ -141,6 +141,7 @@ public class SaleRest {
                 throw new ClientErrorException(HttpStatus.FORBIDDEN, "Insufficient balance");
 
             //fai ritornaare i soldi all'ultima offerta
+            //bisogna usare il buyer PM non il seller
             sellerPM.setBalance(sellerPM.getBalance() + sale.getPrice());
 
             //trasferisci i soldi
