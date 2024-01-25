@@ -166,7 +166,7 @@ public class SaleRest {
             paymentMethodDao.update(sellerPM);
             saleDao.update(sale);
             DBManager.getInstance().endTransaction();
-            
+
             //chiamare pushUpdate in real time manager
             RealTimeService.pushNewOffer(nftId, offer);
         }
