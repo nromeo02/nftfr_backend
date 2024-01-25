@@ -22,6 +22,6 @@ public class RTRestTest {
     @ResponseStatus(HttpStatus.OK)
     public void test2() {
         myInt += 10.0;
-        RealTimeService.pushUpdate("test_id", myInt);
+        RealTimeService.pushNewOffer("test_id", myInt);
     }
 }

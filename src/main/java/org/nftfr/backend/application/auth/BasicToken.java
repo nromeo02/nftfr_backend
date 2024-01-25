@@ -1,4 +1,4 @@
-package org.nftfr.backend.application;
+package org.nftfr.backend.application.auth;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.servlet.http.HttpServletRequest;

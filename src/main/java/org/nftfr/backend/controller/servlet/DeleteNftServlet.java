@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpSession;
 import org.nftfr.backend.persistence.DBManager;
 import org.nftfr.backend.persistence.dao.NftDao;
 import org.nftfr.backend.persistence.model.Nft;
-import org.nftfr.backend.application.NftImage;
+import org.nftfr.backend.application.image.NftImage;
 
 import java.io.IOException;
 @WebServlet("/admin/delete/nft")
