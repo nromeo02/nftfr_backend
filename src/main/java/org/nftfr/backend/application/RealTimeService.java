@@ -3,7 +3,12 @@ package org.nftfr.backend.application;
 import org.nftfr.backend.persistence.DBManager;
 import org.nftfr.backend.persistence.dao.NftDao;
 import org.nftfr.backend.persistence.dao.SaleDao;
+import org.nftfr.backend.persistence.model.Nft;
+import org.nftfr.backend.persistence.model.PaymentMethod;
+import org.nftfr.backend.persistence.dao.PaymentMethodDao;
 import org.nftfr.backend.persistence.model.Sale;
+import org.nftfr.backend.persistence.model.User;
+import org.nftfr.backend.persistence.dao.UserDao;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -22,6 +27,10 @@ public class RealTimeService {
     static private final ConcurrentHashMap<String, CopyOnWriteArrayList<SseEmitter>> auctionEmitters = new ConcurrentHashMap<>();
     static private final ConcurrentLinkedQueue<AuctionOffer> auctionOffers = new ConcurrentLinkedQueue<>();
     private final NftDao nftDao = DBManager.getInstance().getNftDao();
+    private final SaleDao saleDao = DBManager.getInstance().getSaleDao();
+    private final UserDao userDao = DBManager.getInstance().getUserDao();
+    private final PaymentMethodDao paymentMethodDao = DBManager.getInstance().getPaymentMethodDao();
+
 
     private static void sendNewOfferToAll(AuctionOffer auctionOffer) {
         List<SseEmitter> emitters = auctionEmitters.get(auctionOffer.nftId());
@@ -97,6 +106,20 @@ public class RealTimeService {
             if (auction.getEndTime().isBefore(now)) {
                 final String nftId = auction.getNft().getId();
                 System.out.println("Found sale to remove: " + nftId);
+                Sale sale = saleDao.findByNftId(nftId);
+                Nft nft = nftDao.findById(nftId);
+
+                //questo sono costretto a farlo per come è fatto setOwner
+                User user = userDao.findByUsername(sale.getOfferMaker());
+                nft.setOwner(user);
+                nft.setValue(sale.getPrice());
+
+                //qui va la logica per far tornare i soldi a sellerPM?
+                PaymentMethod sellerPM = paymentMethodDao.findByAddress(sale.getSellerPaymentMethod().getAddress());
+                sellerPM.setBalance(sellerPM.getBalance()+sale.getPrice());
+
+                paymentMethodDao.update(sellerPM);
+                nftDao.update(nft);
                 saleDao.remove(nftId);
                 sendEndToAll(nftId);
             }

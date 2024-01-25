@@ -108,6 +108,7 @@ public class SaleRest {
     @GetMapping("/offer/{nftId}")
     @ResponseStatus(HttpStatus.OK)
     public void makeAnOffer(@PathVariable String nftId, HttpServletRequest req, @RequestBody Map<String, String> bodyParams) {
+//creare previousBuyerPM con il buyer_address e fargli ritornare il sale.get price POI prendere i soldi da buyerPM settare il suo address come buyer_address e aggionrale sale.getPrice()
         //verifica che la sale esiste
         Sale sale = saleDao.findByNftId(nftId);
         if (sale == null) {
@@ -140,6 +141,14 @@ public class SaleRest {
             if (!buyerPM.getUser().getUsername().equals(buyer.getUsername()))
                 throw new ClientErrorException(HttpStatus.FORBIDDEN, "Invalid payment method");
 
+            //paymenth method a cui vanno ritornati i soldi, se non esiste prende quello di buyer
+            if(sale.getBuyerPaymentMethod()==null){
+                sale.setBuyerPaymentMethod(buyerPM);
+            }
+
+            PaymentMethod previousBuyerPM = sale.getBuyerPaymentMethod(); //a lui vanno ritornati i soldi
+            //quando si finisce tutto far ritoranre i soldi a lui settare il paymentmethod(buyerPM) e fare update si previous e sale
+
             //convertire il denaro se serve
             double offer = Double.parseDouble(bodyParams.get("offer"));
             PaymentMethod sellerPM = sale.getSellerPaymentMethod();       /* questo non deve cambiare mai, è il payment method di chi ha creato l'asta */
@@ -155,10 +164,9 @@ public class SaleRest {
                 throw new ClientErrorException(HttpStatus.FORBIDDEN, "Insufficient balance");
 
             //fai ritornaare i soldi all'ultima offerta
-            //bisogna usare il buyer PM non il seller
-            sellerPM.setBalance(sellerPM.getBalance() + sale.getPrice());
+            previousBuyerPM.setBalance(previousBuyerPM.getBalance() + sale.getPrice());
 
-            //trasferisci i soldi
+            //trasferisci i soldi dell'offerta corrente da buyerPM
             double buyerBalance = buyerPM.getBalance();
             if (buyerPM.getType() != sellerPM.getType()) {
                 if (sellerPM.getType() == PaymentMethod.TYPE_ETH) {
@@ -178,7 +186,7 @@ public class SaleRest {
             //fai l'update di tutti i dao
             DBManager.getInstance().beginTransaction();
             paymentMethodDao.update(buyerPM);
-            paymentMethodDao.update(sellerPM);
+            paymentMethodDao.update(previousBuyerPM);
             saleDao.update(sale);
             DBManager.getInstance().endTransaction();
 
