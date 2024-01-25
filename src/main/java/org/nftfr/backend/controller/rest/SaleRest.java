@@ -30,12 +30,12 @@ public class SaleRest {
     private final NftDao nftDao = DBManager.getInstance().getNftDao();
     private final PaymentMethodDao paymentMethodDao = DBManager.getInstance().getPaymentMethodDao();
 
-    public record CreateBody(String idNft, String destinationAddress, double price, Duration duration) {
+    public record CreateBody(String idNft, String sellerAddress, double price, Duration duration) {
         public Sale asSale(Nft nft, PaymentMethod paymentMethod) {
             Sale sale = new Sale();
             LocalDateTime now = LocalDateTime.now();
             sale.setNft(nft);
-            sale.setPaymentMethod(paymentMethod);
+            sale.setSellerPaymentMethod(paymentMethod);
             sale.setPrice(price);
             sale.setCreationDate(now);
 
@@ -55,7 +55,7 @@ public class SaleRest {
         if (nft == null)
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "NFT not found");
 
-        PaymentMethod paymentMethod = paymentMethodDao.findByAddress(bodyParams.destinationAddress());
+        PaymentMethod paymentMethod = paymentMethodDao.findByAddress(bodyParams.sellerAddress());
         if (paymentMethod == null)
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "Payment method not found");
 
@@ -128,7 +128,7 @@ public class SaleRest {
 
             //convertire il denaro se serve
             double offer = Double.parseDouble(bodyParams.get("offer"));
-            PaymentMethod sellerPM = sale.getPaymentMethod();
+            PaymentMethod sellerPM = sale.getSellerPaymentMethod();
             if (buyerPM.getType() != sellerPM.getType()) {
                 if (sellerPM.getType() == PaymentMethod.TYPE_ETH) {
                     offer = MoneyConverter.getInstance().convertUsdToEth(offer);
@@ -156,7 +156,7 @@ public class SaleRest {
             }
 
             //update del prezzo e persona corrente
-            sale.setPaymentMethod(buyerPM);
+            sale.setBuyerPaymentMethod(buyerPM);
             sale.setPrice(offer);
             sale.setOfferMaker(authToken.username());
 
@@ -203,7 +203,7 @@ public class SaleRest {
 
         // Convert money if required.
         double buyerBalance = buyerPM.getBalance();
-        PaymentMethod sellerPM = sale.getPaymentMethod();
+        PaymentMethod sellerPM = sale.getSellerPaymentMethod();
         if (buyerPM.getType() != sellerPM.getType()) {
             if (sellerPM.getType() == PaymentMethod.TYPE_ETH) {
                 buyerBalance = MoneyConverter.getInstance().convertUsdToEth(buyerBalance);

@@ -29,14 +29,19 @@ public class SaleDaoPostgres implements SaleDao {
 
     @Override
     public void add(Sale sale) {
-        final String sql = "INSERT INTO sale (nft_id, destination_address, price, creation_date, end_time, offer_maker) VALUES (?, ?, ?, ?, ?, ?);";
+        final String sql = "INSERT INTO sale (nft_id, seller_address, price, creation_date, end_time, offer_maker, buyer_address) VALUES (?, ?, ?, ?, ?, ?);";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, sale.getNft().getId());
-            stmt.setString(2, sale.getPaymentMethod().getAddress());
+            stmt.setString(2, sale.getSellerPaymentMethod().getAddress());
             stmt.setDouble(3, sale.getPrice());
             stmt.setObject(4, sale.getCreationDate());
             stmt.setObject(5, sale.getEndTime());
             stmt.setString(6, sale.getOfferMaker());
+            if (sale.getBuyerPaymentMethod() != null) {
+                stmt.setString(7, sale.getBuyerPaymentMethod().getAddress());
+            } else {
+                stmt.setString(7, null);
+            }
             stmt.executeUpdate();
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
