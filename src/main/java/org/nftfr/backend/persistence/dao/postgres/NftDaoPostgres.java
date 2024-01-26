@@ -171,5 +171,7 @@ public class NftDaoPostgres implements NftDao {
             throw new RuntimeException(ex);
         }
     }
+
+
 }
 

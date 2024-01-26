@@ -101,4 +101,12 @@ public class UserRest {
 
         return user;
     }
+    @GetMapping("get/value/{username}")
+    @ResponseStatus(HttpStatus.OK)
+    public double getUserValue(@PathVariable String username){
+        User user = userDao.findByUsername(username);
+        if(user == null)
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "User not found");
+        return userDao.getUserValue(username);
+    }
 }

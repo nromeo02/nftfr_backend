@@ -9,4 +9,5 @@ public interface UserDao {
     void delete(String username);
     // Returns a user if found, otherwise returns null.
     User findByUsername(String username);
+    double getUserValue(String username);
 }

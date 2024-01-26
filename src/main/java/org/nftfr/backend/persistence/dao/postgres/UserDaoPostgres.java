@@ -83,4 +83,21 @@ public class UserDaoPostgres implements UserDao {
             throw new RuntimeException(ex);
         }
     }
+    @Override
+    public double getUserValue(String username) {
+        double value = 0.0;
+        final String sql = "Select * nft where owner=?";
+        try(PreparedStatement stmt = connection.prepareStatement(sql)){
+            stmt.setString(1, username);
+            try (ResultSet resultSet = stmt.executeQuery()) {
+                while (resultSet.next()) {
+                    double nftPrice = resultSet.getDouble("value");
+                    value += nftPrice;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return value;
+    }
 }
