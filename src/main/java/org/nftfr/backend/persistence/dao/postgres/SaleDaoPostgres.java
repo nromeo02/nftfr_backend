@@ -29,7 +29,7 @@ public class SaleDaoPostgres implements SaleDao {
 
     @Override
     public void add(Sale sale) {
-        final String sql = "INSERT INTO sale (nft_id, seller_address, price, creation_date, end_time, offer_maker, buyer_address) VALUES (?, ?, ?, ?, ?, ?);";
+        final String sql = "INSERT INTO sale (nft_id, seller_address, price, creation_date, end_time, offer_maker, buyer_address) VALUES (?, ?, ?, ?, ?, ?, ?);";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, sale.getNft().getId());
             stmt.setString(2, sale.getSellerPaymentMethod().getAddress());
