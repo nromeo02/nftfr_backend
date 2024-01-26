@@ -100,4 +100,22 @@ public class UserDaoPostgres implements UserDao {
         }
         return value;
     }
+
+    public int getRank(String username) {
+        final String sql = "SELECT rank FROM users WHERE username=?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            try (ResultSet resultSet = stmt.executeQuery()) {
+                if (resultSet.next()) {
+                    // Se l'utente è trovato, ottieni il rank dalla colonna "rank"
+                    return resultSet.getInt("rank");
+                } else {
+                    // L'utente non è stato trovato
+                    throw new RuntimeException("User not found");
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
