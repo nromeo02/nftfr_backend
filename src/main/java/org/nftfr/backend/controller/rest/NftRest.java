@@ -93,6 +93,29 @@ public class NftRest {
         nftDao.update(nft);
     }
 
+    @DeleteMapping(value = "/delete/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable String id, HttpServletRequest req) {
+        AuthToken authToken = AuthToken.fromRequest(req);
+        Nft nft = nftDao.findById(id);
+        if (nft == null)
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "NFT not found");
+
+        // Only the owner can delete a NFT.
+        if (!nft.getOwner().getUsername().equals(authToken.username()))
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "You don't have the permissions for this action");
+
+        // Delete all reports and sales related to this NFT, then delete the NFT.
+        DBManager.getInstance().beginTransaction();
+        DBManager.getInstance().getReportDao().delete(id);
+        DBManager.getInstance().getSaleDao().removeByNftId(id);
+        nftDao.delete(id);
+        DBManager.getInstance().endTransaction();
+
+        // Delete NFT image.
+        NftImage.deleteWithId(id);
+    }
+
     @PostMapping(value = "/find")
     @ResponseStatus(HttpStatus.OK)
     public List<Nft> find(@RequestBody FindBody bodyParams) {
