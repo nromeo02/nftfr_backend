@@ -109,12 +109,11 @@ public class RealTimeService {
                 Sale sale = saleDao.findByNftId(nftId);
                 Nft nft = nftDao.findById(nftId);
 
-                //questo sono costretto a farlo per come è fatto setOwner
                 User user = userDao.findByUsername(sale.getOfferMaker());
                 nft.setOwner(user);
                 nft.setValue(sale.getPrice());
 
-                //qui va la logica per far tornare i soldi a sellerPM?
+
                 PaymentMethod sellerPM = paymentMethodDao.findByAddress(sale.getSellerPaymentMethod().getAddress());
                 sellerPM.setBalance(sellerPM.getBalance()+sale.getPrice());
 

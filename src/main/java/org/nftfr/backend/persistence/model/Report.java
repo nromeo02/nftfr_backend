@@ -3,9 +3,6 @@ package org.nftfr.backend.persistence.model;
 public class Report {
     private String nftId;
     private int counter;
-
-    private String comment;
-
     public Report() {}
 
     public String getNftId() {
@@ -24,11 +21,4 @@ public class Report {
         this.counter = counter;
     }
 
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
 }
