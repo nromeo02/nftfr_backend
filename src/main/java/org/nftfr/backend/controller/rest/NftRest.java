@@ -171,6 +171,6 @@ public class NftRest {
         if (nftDao.findById(id) == null)
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "NFT not found");
 
-        reportDao.createOrUpdateReport(id, reportData.get("comment"));
+        reportDao.createOrUpdateReport(id);
     }
 }

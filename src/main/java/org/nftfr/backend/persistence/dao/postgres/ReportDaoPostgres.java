@@ -18,13 +18,11 @@ public class ReportDaoPostgres implements ReportDao {
     }
 
     @Override
-    public void createOrUpdateReport(String id, String message) {
+    public void createOrUpdateReport(String id) {
         Report report = getReportById(id);
         String sql;
-        //check
-        //se non esiste crealo
         if (report == null) {
-            sql = "INSERT INTO reported (nft_id, counter, message) VALUES (?, 1, ?);";
+            sql = "INSERT INTO reported (nft_id, counter) VALUES (?, 1);";
         } else {
         //altrimenti aggiornalo
             sql = "UPDATE reported SET counter = counter + 1 WHERE nft_id=?;";
@@ -60,7 +58,6 @@ public class ReportDaoPostgres implements ReportDao {
                 Report report = new Report();
                 report.setNftId(rs.getString("nft_id"));
                 report.setCounter(rs.getInt("counter"));
-                report.setComment(rs.getString("comment"));
                 reports.add(report);
             }
             return reports;
