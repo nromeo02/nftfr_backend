@@ -253,7 +253,7 @@ public class SaleRest {
         // Check if a user is trying to buy their own nft.
         Nft nft = sale.getNft();
         if (nft.getOwner().getUsername().equals(buyer.getUsername()))
-            throw new ClientErrorException(HttpStatus.FORBIDDEN, "You already own this nft");
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "You already own this NFT");
 
         // Find and verify the payment method.
         PaymentMethod buyerPM = paymentMethodDao.findByAddress(bodyParams.get("address"));

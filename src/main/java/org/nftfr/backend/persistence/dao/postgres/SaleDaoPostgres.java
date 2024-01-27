@@ -50,10 +50,18 @@ public class SaleDaoPostgres implements SaleDao {
 
     @Override
     public void update(Sale sale) {
-        final String sql = "UPDATE sale SET price=?, offer_maker=? WHERE nft_id=?;";
+        final String sql = "UPDATE sale SET price=?, creation_date=?, end_time=?, offer_maker=?, buyer_address=? WHERE nft_id=?;";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setDouble(1, sale.getPrice());
-            stmt.setString(2, sale.getOfferMaker());
+            stmt.setObject(2, sale.getCreationDate());
+            stmt.setObject(3, sale.getEndTime());
+            stmt.setString(4, sale.getOfferMaker());
+            if (sale.getBuyerPaymentMethod() != null) {
+                stmt.setString(5, sale.getBuyerPaymentMethod().getAddress());
+            } else {
+                stmt.setString(5, null);
+            }
+            stmt.setString(6, sale.getNft().getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
