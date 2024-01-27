@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,8 +28,8 @@ public class RealTimeService {
     static private final ConcurrentHashMap<String, CopyOnWriteArrayList<SseEmitter>> auctionEmitters = new ConcurrentHashMap<>();
     static private final ConcurrentLinkedQueue<AuctionOffer> auctionOffers = new ConcurrentLinkedQueue<>();
     private final NftDao nftDao = DBManager.getInstance().getNftDao();
-    private final SaleDao saleDao = DBManager.getInstance().getSaleDao();
     private final UserDao userDao = DBManager.getInstance().getUserDao();
+    final SaleDao saleDao = DBManager.getInstance().getSaleDao();
     private final PaymentMethodDao paymentMethodDao = DBManager.getInstance().getPaymentMethodDao();
 
 
@@ -97,33 +98,45 @@ public class RealTimeService {
     // Check for auction end every 5 seconds.
     @Scheduled(fixedDelay = 5000)
     public void checkAuctionEnd() {
-        final SaleDao saleDao = DBManager.getInstance().getSaleDao();
         final LocalDateTime now = LocalDateTime.now();
         List<Sale> auctions = saleDao.getAllAuctions();
 
-        DBManager.getInstance().beginTransaction();
         for (Sale auction : auctions) {
             if (auction.getEndTime().isBefore(now)) {
-                final String nftId = auction.getNft().getId();
-                System.out.println("Found sale to remove: " + nftId);
-                Sale sale = saleDao.findByNftId(nftId);
-                Nft nft = nftDao.findById(nftId);
+                // Reset auction if no one made an offer.
+                User offerMaker = userDao.findByUsername(auction.getOfferMaker());
+                if (offerMaker == null) {
+                    Duration between = Duration.between(auction.getCreationDate(), auction.getEndTime());
+                    LocalDateTime newEnd = now.plus(between);
+                    auction.setCreationDate(now);
+                    auction.setEndTime(newEnd);
+                    saleDao.update(auction);
+                    continue;
+                }
 
-                User user = userDao.findByUsername(sale.getOfferMaker());
-                nft.setOwner(user);
-                nft.setValue(sale.getPrice());
+                // Transfer money.
+                PaymentMethod sellerPM = auction.getSellerPaymentMethod();
+                sellerPM.setBalance(sellerPM.getBalance() + auction.getPrice());
 
+                // Transfer NFT ownership and update value.
+                Nft nft = auction.getNft();
+                nft.setOwner(offerMaker);
+                nft.setValue(auction.getPrice());
 
-                PaymentMethod sellerPM = paymentMethodDao.findByAddress(sale.getSellerPaymentMethod().getAddress());
-                sellerPM.setBalance(sellerPM.getBalance()+sale.getPrice());
+                // Increase offer maker rank.
+                offerMaker.setRank(offerMaker.getRank() + 1);
 
+                // Update the database.
+                DBManager.getInstance().beginTransaction();
                 paymentMethodDao.update(sellerPM);
                 nftDao.update(nft);
-                saleDao.remove(nftId);
-                sendEndToAll(nftId);
+                userDao.update(offerMaker);
+                saleDao.remove(nft.getId());
+                DBManager.getInstance().endTransaction();
+
+                // Push end update to clients.
+                sendEndToAll(nft.getId());
             }
         }
-
-        DBManager.getInstance().endTransaction();
     }
 }

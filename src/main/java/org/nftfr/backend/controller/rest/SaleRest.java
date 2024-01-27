@@ -16,6 +16,7 @@ import org.nftfr.backend.application.http.ClientErrorException;
 import org.nftfr.backend.application.MoneyConverter;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -46,6 +47,8 @@ public class SaleRest {
             return sale;
         }
     }
+
+    public record OfferBody(String address, Double offer) {}
 
     @PutMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
@@ -105,95 +108,113 @@ public class SaleRest {
         return sale;
     }
 
+    @GetMapping("/get/updates/{nftId}")
+    public SseEmitter getUpdates(@PathVariable String nftId) {
+        Sale sale = saleDao.findByNftId(nftId);
+        if (sale == null)
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "Sale not found");
+
+        // Set timeout to 1 minute.
+        SseEmitter emitter = new SseEmitter(60 * 1000L);
+        RealTimeService.registerEmitter(nftId, emitter);
+        return emitter;
+    }
+
     @GetMapping("/offer/{nftId}")
     @ResponseStatus(HttpStatus.OK)
-    public void makeAnOffer(@PathVariable String nftId, HttpServletRequest req, @RequestBody Map<String, String> bodyParams) {
-//creare previousBuyerPM con il buyer_address e fargli ritornare il sale.get price POI prendere i soldi da buyerPM settare il suo address come buyer_address e aggionrale sale.getPrice()
-        //verifica che la sale esiste
-        Sale sale = saleDao.findByNftId(nftId);
-        if (sale == null) {
+    public void makeAnOffer(@PathVariable String nftId, @RequestBody OfferBody bodyParams, HttpServletRequest req) {
+        Sale auction = saleDao.findByNftId(nftId);
+        if (auction == null)
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "Sale not found");
-        }
-        //verifica che l'asta non sia finita
+
+        if (auction.getEndTime() == null)
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "Attempted to make an offer to a sale");
+
+        // Make sure the auction is not finished.
         LocalDateTime now = LocalDateTime.now();
-        if (now.isAfter(sale.getEndTime())) {
+        if (now.isAfter(auction.getEndTime()))
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "Auction has ended");
-        } else {
-            MoneyConverter moneyConverter = MoneyConverter.getInstance();
-            AuthToken authToken = AuthToken.fromRequest(req);
-            //verifica che l'acquirente essista
-            User buyer = userDao.findByUsername(authToken.username());
-            if (buyer == null) {
-                throw new ClientErrorException(HttpStatus.NOT_FOUND, "User not found");
-            }
-            //verifica che l'acquirente non possegga già nft
-            Nft nft = sale.getNft();
-            if (nft.getOwner().getUsername().equals(buyer.getUsername()))
-                throw new ClientErrorException(HttpStatus.FORBIDDEN, "You already own this nft");
 
-            //verifica che l'acquirente abbia un metodo di pagamento e che sia dello stesso tipo dell'asta
-            PaymentMethod buyerPM = paymentMethodDao.findByAddress(bodyParams.get("address"));
+        // Get offer maker.
+        AuthToken authToken = AuthToken.fromRequest(req);
+        User offerMaker = userDao.findByUsername(authToken.username());
+        if (offerMaker == null)
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "User not found");
 
-            //verifica che il paymentMethodSiaValida
-            if (buyerPM == null)
-                throw new ClientErrorException(HttpStatus.NOT_FOUND, "Payment method not found");
+        // Check if the buyer already owns the NFT.
+        Nft nft = auction.getNft();
+        if (nft.getOwner().getUsername().equals(offerMaker.getUsername()))
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "You already own this NFT");
 
-            if (!buyerPM.getUser().getUsername().equals(buyer.getUsername()))
-                throw new ClientErrorException(HttpStatus.FORBIDDEN, "Invalid payment method");
+        // Get payment method.
+        PaymentMethod offerMakerPM = paymentMethodDao.findByAddress(bodyParams.address());
+        if (offerMakerPM == null)
+            throw new ClientErrorException(HttpStatus.NOT_FOUND, "Payment method not found");
 
-            //paymenth method a cui vanno ritornati i soldi, se non esiste prende quello di buyer
-            if(sale.getBuyerPaymentMethod()==null){
-                sale.setBuyerPaymentMethod(buyerPM);
-            }
+        if (!offerMakerPM.getUser().getUsername().equals(offerMaker.getUsername()))
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "Invalid payment method");
 
-            PaymentMethod previousBuyerPM = sale.getBuyerPaymentMethod(); //a lui vanno ritornati i soldi
-            //quando si finisce tutto far ritoranre i soldi a lui settare il paymentmethod(buyerPM) e fare update si previous e sale
+        // Check if the user can send the offer.
+        double offerValue = bodyParams.offer();
+        if (offerValue < offerMakerPM.getBalance())
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "Insufficient balance");
 
-            //convertire il denaro se serve
-            double offer = Double.parseDouble(bodyParams.get("offer"));
-            PaymentMethod sellerPM = sale.getSellerPaymentMethod();       /* questo non deve cambiare mai, è il payment method di chi ha creato l'asta */
-            if (buyerPM.getType() != sellerPM.getType()) {
-                if (sellerPM.getType() == PaymentMethod.TYPE_ETH) {
-                    offer = MoneyConverter.getInstance().convertUsdToEth(offer);
-                } else {
-                    offer = MoneyConverter.getInstance().convertEthToUsd(offer);
-                }
-            }
-
-            if (offer < sale.getPrice())
-                throw new ClientErrorException(HttpStatus.FORBIDDEN, "Insufficient balance");
-
-            //fai ritornaare i soldi all'ultima offerta
-            previousBuyerPM.setBalance(previousBuyerPM.getBalance() + sale.getPrice());
-
-            //trasferisci i soldi dell'offerta corrente da buyerPM
-            double buyerBalance = buyerPM.getBalance();
-            if (buyerPM.getType() != sellerPM.getType()) {
-                if (sellerPM.getType() == PaymentMethod.TYPE_ETH) {
-                    buyerPM.setBalance(moneyConverter.convertEthToUsd(buyerBalance - offer));
-                } else {
-                    buyerPM.setBalance(moneyConverter.convertUsdToEth(buyerBalance - offer));
-                }
+        // Convert balance and offer value if needed.
+        MoneyConverter moneyConverter = MoneyConverter.getInstance();
+        double offerMakerBalance = offerMakerPM.getBalance();
+        final PaymentMethod sellerPM = auction.getSellerPaymentMethod();
+        if (offerMakerPM.getType() != sellerPM.getType()) {
+            if (sellerPM.getType() == PaymentMethod.TYPE_ETH) {
+                offerMakerBalance = moneyConverter.convertUsdToEth(offerMakerBalance);
+                offerValue = moneyConverter.convertUsdToEth(offerValue);
             } else {
-                buyerPM.setBalance(buyerBalance - sale.getPrice());
+                offerMakerBalance = moneyConverter.convertEthToUsd(offerMakerBalance);
+                offerValue = moneyConverter.convertEthToUsd(offerValue);
             }
-
-            //update del prezzo e persona corrente
-            sale.setBuyerPaymentMethod(buyerPM);
-            sale.setPrice(offer);
-            sale.setOfferMaker(authToken.username());
-
-            //fai l'update di tutti i dao
-            DBManager.getInstance().beginTransaction();
-            paymentMethodDao.update(buyerPM);
-            paymentMethodDao.update(previousBuyerPM);
-            saleDao.update(sale);
-            DBManager.getInstance().endTransaction();
-
-            //chiamare pushUpdate in real time manager
-            RealTimeService.pushNewOffer(nftId, offer);
         }
+
+        // Check if the offer is valid.
+        if (offerValue < auction.getPrice())
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "Insufficient balance");
+
+        // Return the money to the previous offer maker.
+        PaymentMethod prevOfferMakerPM = auction.getBuyerPaymentMethod();
+        if (prevOfferMakerPM != null)
+            prevOfferMakerPM.setBalance(prevOfferMakerPM.getBalance() + auction.getPrice());
+
+        // Decrease offer maker balance.
+        if (offerMakerPM.getType() != sellerPM.getType()) {
+            if (sellerPM.getType() == PaymentMethod.TYPE_ETH) {
+                offerMakerPM.setBalance(moneyConverter.convertEthToUsd(offerMakerBalance - offerValue));
+            } else {
+                offerMakerPM.setBalance(moneyConverter.convertUsdToEth(offerMakerBalance - offerValue));
+            }
+        } else {
+            offerMakerPM.setBalance(offerMakerBalance - offerValue);
+        }
+
+        // If the auction end is less than 5 minutes then reset it.
+        final LocalDateTime in5Minutes = now.plusMinutes(5);
+        if (in5Minutes.isAfter(auction.getEndTime()))
+            auction.setEndTime(in5Minutes);
+
+        // Update auction.
+        auction.setBuyerPaymentMethod(offerMakerPM);
+        auction.setPrice(offerValue);
+        auction.setOfferMaker(offerMaker.getUsername());
+
+        // Make changes persistent.
+        DBManager.getInstance().beginTransaction();
+        paymentMethodDao.update(prevOfferMakerPM);
+        paymentMethodDao.update(offerMakerPM);
+        saleDao.update(auction);
+        DBManager.getInstance().endTransaction();
+
+
+        // Push update to all connected clients.
+        RealTimeService.pushNewOffer(nftId, offerValue);
     }
+
     @PutMapping("/buy/{nftId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void buy(@PathVariable String nftId, @RequestBody Map<String, String> bodyParams, HttpServletRequest req) {
@@ -205,7 +226,8 @@ public class SaleRest {
         if (sale == null)
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "Sale not found");
 
-        Nft nft = sale.getNft();
+        if (sale.getEndTime() != null)
+            throw new ClientErrorException(HttpStatus.FORBIDDEN, "Attempted to buy a NFT in auction");
 
         // Find user.
         User buyer = userDao.findByUsername(authToken.username());
@@ -213,6 +235,7 @@ public class SaleRest {
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "User not found");
 
         // Check if a user is trying to buy their own nft.
+        Nft nft = sale.getNft();
         if (nft.getOwner().getUsername().equals(buyer.getUsername()))
             throw new ClientErrorException(HttpStatus.FORBIDDEN, "You already own this nft");
 
@@ -226,7 +249,7 @@ public class SaleRest {
 
         // Convert money if required.
         double buyerBalance = buyerPM.getBalance();
-        PaymentMethod sellerPM = sale.getSellerPaymentMethod();     /* questo non cambia mai, è il payment di chi ha creato l'asta */
+        PaymentMethod sellerPM = sale.getSellerPaymentMethod();
         if (buyerPM.getType() != sellerPM.getType()) {
             if (sellerPM.getType() == PaymentMethod.TYPE_ETH) {
                 buyerBalance = MoneyConverter.getInstance().convertUsdToEth(buyerBalance);
@@ -235,6 +258,7 @@ public class SaleRest {
             }
         }
 
+        // Check if the buyer has enough money.
         if (buyerBalance < sale.getPrice())
             throw new ClientErrorException(HttpStatus.FORBIDDEN, "Insufficient balance");
 
