@@ -120,7 +120,7 @@ public class SaleRest {
         return emitter;
     }
 
-    @GetMapping("/offer/{nftId}")
+    @PutMapping("/offer/{nftId}")
     @ResponseStatus(HttpStatus.OK)
     public void makeAnOffer(@PathVariable String nftId, @RequestBody OfferBody bodyParams, HttpServletRequest req) {
         Sale auction = saleDao.findByNftId(nftId);
