@@ -1,11 +1,9 @@
 package org.nftfr.backend.application;
 
 import org.nftfr.backend.persistence.DBManager;
-import org.nftfr.backend.persistence.dao.NftDao;
 import org.nftfr.backend.persistence.dao.SaleDao;
 import org.nftfr.backend.persistence.model.Nft;
 import org.nftfr.backend.persistence.model.PaymentMethod;
-import org.nftfr.backend.persistence.dao.PaymentMethodDao;
 import org.nftfr.backend.persistence.model.Sale;
 import org.nftfr.backend.persistence.model.User;
 import org.nftfr.backend.persistence.dao.UserDao;
@@ -27,11 +25,6 @@ public class RealTimeService {
     private record AuctionUpdate(String event, String nftId, Double value) {}
     static private final ConcurrentHashMap<String, CopyOnWriteArrayList<SseEmitter>> auctionEmitters = new ConcurrentHashMap<>();
     static private final ConcurrentLinkedQueue<AuctionOffer> auctionOffers = new ConcurrentLinkedQueue<>();
-    private final NftDao nftDao = DBManager.getInstance().getNftDao();
-    private final UserDao userDao = DBManager.getInstance().getUserDao();
-    final SaleDao saleDao = DBManager.getInstance().getSaleDao();
-    private final PaymentMethodDao paymentMethodDao = DBManager.getInstance().getPaymentMethodDao();
-
 
     private static void sendNewOfferToAll(AuctionOffer auctionOffer) {
         List<SseEmitter> emitters = auctionEmitters.get(auctionOffer.nftId());
@@ -98,6 +91,8 @@ public class RealTimeService {
     // Check for auction end every 5 seconds.
     @Scheduled(fixedDelay = 5000)
     public void checkAuctionEnd() {
+        final UserDao userDao = DBManager.getInstance().getUserDao();
+        final SaleDao saleDao = DBManager.getInstance().getSaleDao();
         final LocalDateTime now = LocalDateTime.now();
         List<Sale> auctions = saleDao.getAllAuctions();
 
@@ -128,8 +123,8 @@ public class RealTimeService {
 
                 // Update the database.
                 DBManager.getInstance().beginTransaction();
-                paymentMethodDao.update(sellerPM);
-                nftDao.update(nft);
+                DBManager.getInstance().getPaymentMethodDao().update(sellerPM);
+                DBManager.getInstance().getNftDao().update(nft);
                 userDao.update(offerMaker);
                 saleDao.remove(nft.getId());
                 DBManager.getInstance().endTransaction();
