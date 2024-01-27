@@ -183,10 +183,21 @@ public class SaleRest {
         if (offerMakerPM.getBalance() < offerValue)
             throw new ClientErrorException(HttpStatus.FORBIDDEN, "Insufficient balance");
 
+        // Return the money to the previous offer maker.
+        final PaymentMethod prevOfferMakerPM = auction.getBuyerPaymentMethod();
+        final PaymentMethod sellerPM = auction.getSellerPaymentMethod();
+        if (prevOfferMakerPM != null) {
+            // Check if the user itself was the previous offer maker.
+            if (prevOfferMakerPM.getAddress().equals(offerMakerPM.getAddress())) {
+                updateBuyerBalance(offerMakerPM, sellerPM, offerMakerPM.getBalance() + auction.getPrice());
+            } else {
+                updateBuyerBalance(prevOfferMakerPM, sellerPM, prevOfferMakerPM.getBalance() + auction.getPrice());
+            }
+        }
+
         // Convert balance and offer value if needed.
         MoneyConverter moneyConverter = MoneyConverter.getInstance();
         double offerMakerBalance = offerMakerPM.getBalance();
-        final PaymentMethod sellerPM = auction.getSellerPaymentMethod();
         if (offerMakerPM.getType() != sellerPM.getType()) {
             if (sellerPM.getType() == PaymentMethod.TYPE_ETH) {
                 offerMakerBalance = moneyConverter.convertUsdToEth(offerMakerBalance);
@@ -200,11 +211,6 @@ public class SaleRest {
         // Check if the offer is valid.
         if (offerValue < auction.getPrice())
             throw new ClientErrorException(HttpStatus.FORBIDDEN, "Insufficient balance");
-
-        // Return the money to the previous offer maker.
-        PaymentMethod prevOfferMakerPM = auction.getBuyerPaymentMethod();
-        if (prevOfferMakerPM != null)
-            updateBuyerBalance(prevOfferMakerPM, sellerPM, prevOfferMakerPM.getBalance() + auction.getPrice());
 
         // Decrease offer maker balance.
         updateBuyerBalance(offerMakerPM, sellerPM, offerMakerBalance - offerValue);
@@ -221,7 +227,7 @@ public class SaleRest {
 
         // Make changes persistent.
         DBManager.getInstance().beginTransaction();
-        if (prevOfferMakerPM != null)
+        if (prevOfferMakerPM != null && !prevOfferMakerPM.getAddress().equals(offerMakerPM.getAddress()))
             paymentMethodDao.update(prevOfferMakerPM);
         paymentMethodDao.update(offerMakerPM);
         saleDao.update(auction);
@@ -251,7 +257,7 @@ public class SaleRest {
         if (buyer == null)
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "User not found");
 
-        // Check if a user is trying to buy their own nft.
+        // Check if a user is trying to buy their own NFT.
         Nft nft = sale.getNft();
         if (nft.getOwner().getUsername().equals(buyer.getUsername()))
             throw new ClientErrorException(HttpStatus.FORBIDDEN, "You already own this NFT");
