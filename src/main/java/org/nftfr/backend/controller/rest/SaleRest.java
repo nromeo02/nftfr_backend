@@ -180,7 +180,7 @@ public class SaleRest {
 
         // Check if the user can send the offer.
         double offerValue = bodyParams.offer();
-        if (offerValue < offerMakerPM.getBalance())
+        if (offerMakerPM.getBalance() < offerValue)
             throw new ClientErrorException(HttpStatus.FORBIDDEN, "Insufficient balance");
 
         // Convert balance and offer value if needed.
@@ -221,7 +221,8 @@ public class SaleRest {
 
         // Make changes persistent.
         DBManager.getInstance().beginTransaction();
-        paymentMethodDao.update(prevOfferMakerPM);
+        if (prevOfferMakerPM != null)
+            paymentMethodDao.update(prevOfferMakerPM);
         paymentMethodDao.update(offerMakerPM);
         saleDao.update(auction);
         DBManager.getInstance().endTransaction();
