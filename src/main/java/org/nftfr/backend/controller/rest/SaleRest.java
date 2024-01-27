@@ -71,6 +71,19 @@ public class SaleRest {
         saleDao.add(bodyParams.asSale(nft, paymentMethod));
     }
 
+    private void updateBuyerBalance(PaymentMethod buyerPM, PaymentMethod sellerPM, Double value) {
+        MoneyConverter moneyConverter = MoneyConverter.getInstance();
+        if (buyerPM.getType() != sellerPM.getType()) {
+            if (sellerPM.getType() == PaymentMethod.TYPE_ETH) {
+                buyerPM.setBalance(moneyConverter.convertEthToUsd(value));
+            } else {
+                buyerPM.setBalance(moneyConverter.convertUsdToEth(value));
+            }
+        } else {
+            buyerPM.setBalance(value);
+        }
+    }
+
     @DeleteMapping("/delete/{nftId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable String nftId, HttpServletRequest req) {
@@ -79,11 +92,22 @@ public class SaleRest {
         if (sale == null)
             throw new ClientErrorException(HttpStatus.NOT_FOUND, "Sale not found");
 
-        // Block the user from deleting other users NFTs.
+        // Block the user from deleting other users sales.
         if (!sale.getNft().getOwner().getUsername().equals(authToken.username()))
             throw new ClientErrorException(HttpStatus.FORBIDDEN, "You don't have the permissions for this action");
 
-        saleDao.remove(nftId);
+        // If this is an auction with an offer, transfer the money back.
+        PaymentMethod offerMakerPM = sale.getBuyerPaymentMethod();
+        PaymentMethod sellerPM = sale.getSellerPaymentMethod();
+        if (offerMakerPM != null) {
+            updateBuyerBalance(offerMakerPM, sellerPM, offerMakerPM.getBalance() + sale.getPrice());
+            DBManager.getInstance().beginTransaction();
+            paymentMethodDao.update(offerMakerPM);
+            saleDao.remove(nftId);
+            DBManager.getInstance().endTransaction();
+        } else {
+            saleDao.remove(nftId);
+        }
     }
 
     @GetMapping("/get/sales")
@@ -180,18 +204,10 @@ public class SaleRest {
         // Return the money to the previous offer maker.
         PaymentMethod prevOfferMakerPM = auction.getBuyerPaymentMethod();
         if (prevOfferMakerPM != null)
-            prevOfferMakerPM.setBalance(prevOfferMakerPM.getBalance() + auction.getPrice());
+            updateBuyerBalance(prevOfferMakerPM, sellerPM, prevOfferMakerPM.getBalance() + auction.getPrice());
 
         // Decrease offer maker balance.
-        if (offerMakerPM.getType() != sellerPM.getType()) {
-            if (sellerPM.getType() == PaymentMethod.TYPE_ETH) {
-                offerMakerPM.setBalance(moneyConverter.convertEthToUsd(offerMakerBalance - offerValue));
-            } else {
-                offerMakerPM.setBalance(moneyConverter.convertUsdToEth(offerMakerBalance - offerValue));
-            }
-        } else {
-            offerMakerPM.setBalance(offerMakerBalance - offerValue);
-        }
+        updateBuyerBalance(offerMakerPM, sellerPM, offerMakerBalance - offerValue);
 
         // If the auction end is less than 5 minutes then reset it.
         final LocalDateTime in5Minutes = now.plusMinutes(5);
