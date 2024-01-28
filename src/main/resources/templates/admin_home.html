@@ -27,7 +27,8 @@
             <tbody>
                 <tr th:each="report : ${reports_list}">
                     <td>
-                        <a th:href="'https://www.google.com/search?q=' + ${report.nftId}" th:text="${report.nftId}"></a>
+                        <a th:href="'/admin/view/nft/' + ${report.nftId}" th:text="${report.nftId}"></a>
+                        <!--<a th:href="'https://localhost:9001/admin/view/nft/' + ${report.nftId}" th:text="${report.nftId}"></a>  -->
                     </td>
                     <td th:text="${report.counter}"></td>
                 </tr>

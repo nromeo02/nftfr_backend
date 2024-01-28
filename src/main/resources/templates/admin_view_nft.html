@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Admin Login</title>
+  <link href="/static/css/viewNft.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+<h1>Visualizza nft reportato</h1>
+
+<!-- Show the user an error message on failed attempts -->
+<label th:if="${error_code == 1}">Errore: l'utente non esiste</label>
+<label th:if="${error_code == 2}">Errore: autenticazione fallita</label>
+<label th:if="${error_code == 3}">Errore: l'utente non ha i permessi richiesti</label>
+<br th:if="${error_code != null}"><br>
+
+
+<!-- show Nft -->
+<div th:if="${nft != null}">
+  <p>ID NFT: <span th:text="${nft.id}"></span></p>
+  <img src="localhost:9001/nft/get/id/image">
+  <img th:src="${nft.imageUrl}" alt="NFT Image">
+</div>
+
+
+<!-- back to home -->
+<button>
+  <a th:href="@{/admin}">Back to Home</a>
+</button>
+
+</body>
+</html>

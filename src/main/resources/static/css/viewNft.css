@@ -1,0 +1,17 @@
+body {
+    background-color: #00aff0;
+    color: white;
+    font-family: SourceSansPro, 'Times New Roman', Times, serif;
+    text-align: center;
+}
+button {
+    background-color: #ffffff;
+    color: #00aff0;
+    padding: 8px 16px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+}
