@@ -23,7 +23,6 @@
 
 <!-- show Nft -->
 <div th:if="${nft != null}">
-  <p>ID NFT: <span th:text="${nft.id}"></span></p>
   <img th:if="${nft != null}" th:src="@{'http://localhost:9001/nft/get/' + ${nft.id} + '/image'}" alt="NFT Image">
 </div>
 
